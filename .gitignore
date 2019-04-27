@@ -1,0 +1,17 @@
+*.hypothesis/*
+*.pyc
+*/__pycache__/*
+*/.cache/*
+htmlcov/*
+.coverage
+.idea/*
+.cache/*
+gh-pages/*
+.DS_Store
+tools/*
+dist/*
+*.egg-info/*
+*/elm-stuff/*
+*/.mypy_cache/*
+*.pytest_cache/*
+*/__target__/*
