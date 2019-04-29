@@ -4,7 +4,7 @@ and blocking information and show the correct dots and arrows on the stage
 image.
 */
 
-
+// example of what blocking should look like
 [
   {
     script_pos: [1,1,6,1,10],
