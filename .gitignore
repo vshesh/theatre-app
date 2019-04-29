@@ -15,3 +15,5 @@ dist/*
 */.mypy_cache/*
 *.pytest_cache/*
 */__target__/*
+*/node_modules/*
+client/js/node_modules/*

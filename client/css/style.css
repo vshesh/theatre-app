@@ -1,0 +1,21 @@
+.script {
+  width: 60%;
+  margin: 0 auto;
+}
+
+.title {
+  font-size: 150%;
+}
+
+.line .character {
+  font-family: monospace;
+  display: block;
+}
+
+.line .character::after {
+  content: ':';
+}
+
+.direction {
+  font-style: italic;
+}
