@@ -109,14 +109,18 @@ function StageDiagram() {
         let dot = e.relatedTarget.getBoundingClientRect();
         let stage = e.target.getBoundingClientRect();
         let value = [(dot.x-stage.x)/stage.width, (dot.y-stage.y)/stage.height];
-        // _.flow([
-        //   _.toPairs,
-        //   _.map( ([k,v]) => [decodeArray(k), v]),
-        //   _.filter( ([k,v]) => posCompare(k, line) <= 0)
-        // ])
+        (_.flow([
+          _.toPairs,
+          _.map( ([k,v]) => [decodeArray(k), v]),
+          _.filter( ([k,v]) => posCompare(k, active_line) >= 0)
+        ])(blocking))
+        .map(([line,v]) =>
+        actions.blocking.update(
+          line,
+          Object.assign({}, v, {[e.relatedTarget.title]: value})))
         actions.blocking.update(
           active_line,
-          Object.assign({}, characterMap(active_line, blocking), {[e.relatedTarget.title]: value}));
+          Object.assign({}, characterMap(active_line, blocking), {[e.relatedTarget.title]: value}))
       }
     });
     enterable.draggable({
