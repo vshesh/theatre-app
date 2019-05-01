@@ -9,6 +9,23 @@ html,body,#container {
   overflow-y: hidden;
 }
 
+.stage-diagram .character-selector {
+  padding: 10px;
+}
+
+.stage-diagram .character-selector .benched-character {
+  padding: 5px;
+  display: inline-block;
+  border-radius: 50%;
+  background: #ff000088;
+  margin: 5px;
+  touch-action: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  -o-user-select: none;
+  user-select: none;
+}
 
 .stage-diagram {
   text-align: center;
@@ -22,6 +39,11 @@ html,body,#container {
   position: absolute;
   transform: translate(-50%, -50%);
   touch-action: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  -o-user-select: none;
+  user-select: none;
 }
 
 .stage-diagram .img-container {
