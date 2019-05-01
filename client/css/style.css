@@ -1,6 +1,18 @@
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
+html,body,#container {
+  width: 100%;
+  height: 100%;
+}
+
 .script {
   width: 60%;
   margin: 0 auto;
+  height: 100%;
+  overflow-y: scroll;
 }
 
 .title {

@@ -14,32 +14,66 @@ const script = {
   ]
 }
 
-const state = {
-  selected_line: null,
-  cues: {},
-  blocking: {},
-  notes: {},
-  lines_missed: {}
+function Word() {
+  return {
+    view: ({attrs: {word, onclick}}) =>
+      m('span.word', word)
+  }
 }
 
 function Line() {
   return {
-    view: ({attrs: {line, onclick}}) =>
+    view: ({attrs: {state, actions, line, pos}}) =>
     line.length === 2
-    ? m('p.line', {onclick: onclick}, m('span.character', line[0]), line[1])
+    ? m('p.line', {onclick: onclick, 'data-pos': pos, class: `${ _.equals(state.active_line, pos) ? 'active' : ''}`}, m('span.character', line[0]), line[1])
     : m('p.direction', {onclick: onclick}, line[0])
   }
 }
 
 function Script() {
   return {
-    view: ({attrs: {script: s}}) =>
-    m('div.script',
-      m('div.title', s.title, ' by ', s.author),
-      s.acts.map((act, a) =>
-        m('div.act', act.map((scene, sc) => scene.map((line, l) => m(Line, {line, pos: [a, sc, l], }))) ))
+    view: (vnode) =>
+    m('div.script', {onscroll: _.debounce(250, () => {
+      const pos = [].slice.call(vnode.dom.children[1].children)
+        .filter(line => line.getBoundingClientRect().y > 0)[0]
+        .attributes['data-pos'].value.split(',').map(x => parseInt(x));
+      console.log(pos)
+      vnode.attrs.actions.active_line.update(pos);
+    })},
+      m('div.title', vnode.attrs.script.title, ' by ', vnode.attrs.script.author),
+      vnode.attrs.script.acts.map((act, a) =>
+        m('div.act', act.map((scene, sc) => scene.map((line, l) => m(Line, {state: vnode.attrs.state, actions: vnode.attrs.actions, line, pos: [a, sc, l]}))) ))
     )
   }
 }
 
-m.mount(document.getElementById('container'), {view: () => m(Script, {script})});
+const scopeDo = (f) => (coll) => {f(coll); return coll;}
+const SS = (f) => S(x => {f(x); return x;})
+
+const app = {
+  initial_state: {
+    active_line: null,
+    cues: {},
+    blocking: {},
+    notes: {},
+    lines_missed: {}
+  },
+  actions: (update) => ({
+    active_line: {
+      update: (pos) => update({active_line: pos})
+    },
+    blocking: {
+      add: (pos) => update({blocking: SS(b => b.set(pos, {}))}),
+      remove: (pos) => update({blocking: SS(b => b.delete(pos))}),
+      update: (pos, characters) => update({blocking: PS({[pos]: PS(characters)})})
+    }
+  })
+}
+
+var update = m.stream();
+var states = m.stream.scan(P, app.initial_state, update);
+var actions = app.actions(update);
+
+m.mount(document.getElementById('container'), {
+  view: () => m(Script, {script, state: states(), actions})
+});
