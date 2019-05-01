@@ -50,12 +50,18 @@ function Script() {
   }
 }
 
+
 function StageDiagram() {
   return {
-    view: (vnode) => {
+    view: ({attrs: {line, blocking}}) => {
+      console.log('stage-diagram view: ', line, blocking)
+      const b = blocking[line];
       return m('div.stage-diagram',
-        m('img', {src: 'https://lorempixel.com/500/300/1'}),
-        m('span.character', 'Theseus'));
+        m('div.img-container',
+           m('img.diagram', {src: 'img/img.png'}),
+          _.toPairs(b).map(item => m('span.character', {style: {top: `${100*item[1][0]}%`, left: `${100*item[1][1]}%`}}, item[0]))
+        )
+      )
     }
   }
 }
@@ -75,7 +81,12 @@ const app = {
     selected_line: null,
     active_line: null,
     cues: {},
-    blocking: {},
+    blocking: {
+      '0,0,5': {
+        'c1': [0.5, 0.5],
+        'c2': [0.2, 0.3]
+      }
+    },
     notes: {},
     lines_missed: {}
   },
