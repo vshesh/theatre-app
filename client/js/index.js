@@ -14,6 +14,8 @@ const script = {
   ]
 }
 
+const cx = (classmap) => _.keys(_.pickBy((value, key) => _.isBoolean(value) && value, classmap)).join(',')
+
 function Word() {
   return {
     view: ({attrs: {word, onclick}}) =>
@@ -25,7 +27,7 @@ function Line() {
   return {
     view: ({attrs: {state, actions, line, pos}}) =>
     line.length === 2
-    ? m('p.line', {onclick: onclick, 'data-pos': pos, class: `${ _.equals(state.active_line, pos) ? 'active' : ''}`}, m('span.character', line[0]), line[1])
+    ? m('p.line', {onclick: onclick, 'data-pos': pos, class: cx({active: _.equals(state.active_line, pos), selected: _.equals(state.selected_line, pos)})}, m('span.character', line[0]), line[1])
     : m('p.direction', {onclick: onclick}, line[0])
   }
 }
@@ -42,16 +44,35 @@ function Script() {
     })},
       m('div.title', vnode.attrs.script.title, ' by ', vnode.attrs.script.author),
       vnode.attrs.script.acts.map((act, a) =>
-        m('div.act', act.map((scene, sc) => scene.map((line, l) => m(Line, {state: vnode.attrs.state, actions: vnode.attrs.actions, line, pos: [a, sc, l]}))) ))
+        m('div.act', act.map((scene, sc) => scene.map((line, l) =>
+          m(Line, {state: vnode.attrs.state, actions: vnode.attrs.actions, line, pos: [a, sc, l], onclick: () => vnode.attrs.actions.selected_line.update([a, sc, l]) }) )) ))
     )
   }
 }
 
-const scopeDo = (f) => (coll) => {f(coll); return coll;}
+function StageDiagram() {
+  return {
+    view: (vnode) => {
+      return m('div.stage-diagram',
+        m('img', {src: 'https://lorempixel.com/500/300/1'}),
+        m('span.character', 'Theseus'));
+    }
+  }
+}
+
+
+const App = {
+  view: ({attrs: {state, actions, script}}) =>
+    m('div.app',
+      m(StageDiagram, {line: state.active_line, blocking: state.blocking, actions}),
+      m(Script, {script, state, actions}))
+}
+
 const SS = (f) => S(x => {f(x); return x;})
 
 const app = {
   initial_state: {
+    selected_line: null,
     active_line: null,
     cues: {},
     blocking: {},
@@ -59,6 +80,9 @@ const app = {
     lines_missed: {}
   },
   actions: (update) => ({
+    selected_line: {
+      update: (pos) => update({selected_line: pos})
+    },
     active_line: {
       update: (pos) => update({active_line: pos})
     },
@@ -75,5 +99,5 @@ var states = m.stream.scan(P, app.initial_state, update);
 var actions = app.actions(update);
 
 m.mount(document.getElementById('container'), {
-  view: () => m(Script, {script, state: states(), actions})
+  view: () => m(App, {script, state: states(), actions})
 });
