@@ -14,8 +14,11 @@ const script = {
   ]
 }
 
+const posCompare = (a1, a2) => _.zip(a1, a2).map(([x1, x2]) => x1 === x2 ? 0 : x1 < x2 ? -1 : 1).reduce((ans, next) => ans !== 0 ? ans : next, 0);
+const decodeArray = (s) => s.split(',').map(x => parseInt(x));
+const cx = (classmap) => _.keys(_.pickBy((value, key) => _.isBoolean(value) && value, classmap)).join(',');
+const maxCompare = (compare) => (l) => _.reduce((acc, next) => compare(acc, next) < 0 ? next : acc, _.head(l), _.tail(l));
 
-const cx = (classmap) => _.keys(_.pickBy((value, key) => _.isBoolean(value) && value, classmap)).join(',')
 
 function Word() {
   return {
@@ -23,6 +26,7 @@ function Word() {
       m('span.word', word)
   }
 }
+
 
 function Line() {
   return {
@@ -33,14 +37,14 @@ function Line() {
   }
 }
 
+
 function Script() {
   return {
     view: (vnode) =>
     m('div.script', {onscroll: _.debounce(250, () => {
       const pos = [].slice.call(vnode.dom.children[1].children)
-        .filter(line => line.getBoundingClientRect().y > 0)[0]
+        .filter(line => line.getBoundingClientRect().y > vnode.dom.getBoundingClientRect().y)[0]
         .attributes['data-pos'].value.split(',').map(x => parseInt(x));
-      console.log(pos)
       vnode.attrs.actions.active_line.update(pos);
     })},
       m('div.title', vnode.attrs.script.title, ' by ', vnode.attrs.script.author),
@@ -53,16 +57,56 @@ function Script() {
 
 
 function StageDiagram() {
+  let draggable = null;
+  
+  function characterMap(line, blocking) {
+    return !line ? {} : _.flow([
+      _.toPairs,
+      _.map( ([k,v]) => [decodeArray(k), v]),
+      _.filter( ([k,v]) => posCompare(k, line) <= 0),
+      maxCompare((x,y) => posCompare(x[0], y[0])),
+      _.last
+    ])(blocking);
+  }
+  
   return {
+    onupdate: (vnode) => {
+      delete draggable;
+      draggable = interact('.stage-diagram .character')
+        .draggable({
+          onend: function(e) {
+            let rect = interact.getElementRect(e.target.parentNode);
+            let value = [(e.pageX - rect.left)/rect.width, (e.pageY - rect.top)/rect.height];
+            console.log('drag finished', vnode.attrs.line, e.target, value);
+            vnode.attrs.actions.blocking.update(vnode.attrs.line, Object.assign({}, characterMap(vnode.attrs.line, vnode.attrs.blocking), {[e.target.title]: value}));
+          },
+          onmove: function(e) {
+            
+          },
+          modifiers: [
+            interact.modifiers.restrict({
+              restriction: "parent",
+              endOnly: true,
+              elementRect: { top: 0, left: 0, bottom: 1, right: 1 }
+            }),
+          ]
+        });
+    },
+    onremove: () => {
+      delete draggable;
+    },
     view: ({attrs: {line, blocking}}) => {
-      console.log('stage-diagram view: ', line, blocking)
-      const b = blocking[line];
+      console.log('stage-diagram view: ', line, blocking);
+      const b = characterMap(line, blocking);
+      console.log('b: ', b);
       return m('div.stage-diagram',
         m('div.img-container',
-           m('img.diagram', {src: 'img/img.png'}),
-          _.toPairs(b).map(item => m('span.character', {style: {top: `${100*item[1][0]}%`, left: `${100*item[1][1]}%`}}, item[0]))
-        )
-      )
+          m('img.diagram', {src: 'img/img.png'}),
+          _.toPairs(b).map(item =>
+            m('span.character', {title: item[0], style: {left: `${100*item[1][0]}%`, top: `${100*item[1][1]}%`}}, item[0].slice(0,2)))
+        ),
+        m('div.character-selector')
+      );
     }
   }
 }
@@ -84,8 +128,8 @@ const app = {
     cues: {},
     blocking: {
       '0,0,5': {
-        'c1': [0.5, 0.5],
-        'c2': [0.2, 0.3]
+        'Mabel': [0.5, 0.5],
+        'Caversham, Lord': [0.2, 0.3]
       }
     },
     notes: {},
@@ -113,10 +157,3 @@ var actions = app.actions(update);
 m.mount(document.getElementById('container'), {
   view: () => m(App, {script, state: states(), actions})
 });
-
-
-[
-  ['c1', [0.1, 0.2]],
-   
-  ['c2', [0.2, 0.3]]
-]
