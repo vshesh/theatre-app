@@ -14,6 +14,7 @@ const script = {
   ]
 }
 
+
 const cx = (classmap) => _.keys(_.pickBy((value, key) => _.isBoolean(value) && value, classmap)).join(',')
 
 function Word() {
@@ -112,3 +113,10 @@ var actions = app.actions(update);
 m.mount(document.getElementById('container'), {
   view: () => m(App, {script, state: states(), actions})
 });
+
+
+[
+  ['c1', [0.1, 0.2]],
+   
+  ['c2', [0.2, 0.3]]
+]
