@@ -58,7 +58,7 @@ function Script() {
       m('div.title', vnode.attrs.script.title, ' by ', vnode.attrs.script.author),
       vnode.attrs.script.acts.map((act, a) =>
         m('div.act', act.map((scene, sc) => scene.map((line, l) =>
-          m(Line, {state: vnode.attrs.state, actions: vnode.attrs.actions, line, pos: [a, sc, l], onclick: () => vnode.attrs.actions.selected_line.update([a, sc, l]) }) )) ))
+          m(Line, {state: vnode.attrs.state, actions: vnode.attrs.actions, line, pos: [a, sc, l], onclick: () => vnode.attrs.actions.active_line.update([a, sc, l]) }) )) ))
     )
   }
 }
@@ -215,3 +215,5 @@ var actions = app.actions(update);
 m.mount(document.getElementById('container'), {
   view: () => m(App, {script, state: states(), actions})
 });
+
+meiosisTracer({streams: [states]});
