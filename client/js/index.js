@@ -5,6 +5,47 @@ const cx = (classmap) => _.keys(_.pickBy((value, key) => _.isBoolean(value) && v
 const maxCompare = (compare) => (l) => _.reduce((acc, next) => compare(acc, next) < 0 ? next : acc, _.head(l), _.tail(l));
 
 
+const Modal = function() {
+  let dom
+  let children
+
+  // Container component we mount to a root-level DOM node
+  const ModalContainer = {
+    view: () => children
+  }
+
+  return {
+    oncreate(v) {
+      children = v.children
+      // Append a modal container to the end of body
+      dom = document.createElement('div')
+      // The modal class has a fade-in animation
+      dom.className = 'modal'
+      document.body.appendChild(dom)
+      // Mount a separate VDOM tree here
+      m.mount(dom, ModalContainer)
+    },
+    onbeforeupdate(v) {
+      children = v.children
+    },
+    onbeforeremove() {
+      // Add a class with fade-out exit animation
+      dom.classList.add('hide')
+      return new Promise(r => {
+        dom.addEventListener('animationend', r)
+      })
+    },
+    onremove() {
+      // Destroy the modal dom tree. Using m.mount with
+      // null triggers any modal children removal hooks.
+      m.mount(dom, null)
+      document.body.removeChild(dom)
+    },
+    view() {}
+  }
+}
+
+
 function Word() {
   return {
     view: ({attrs: {word, onclick}}) =>
@@ -12,31 +53,50 @@ function Word() {
   }
 }
 
+const CueModal = {
+  view: ({attrs: {onclose}}) =>
+    m(Modal, m('button', {onclick: onclose}, 'done'))
+}
 
-const Line = {
+function Line() {
+  let cueOpen, lightOpen, dirNoteOpen = false;
+  return {
     view: ({attrs: {state, actions, line, pos}}) =>
-    m('span.line', {'data-pos': pos, class: cx({active: state.display.stage && _.equals(state.active_line, pos)}) }, line)
+    m('span.line',
+      {'data-pos': pos, class: cx({active: state.display.stage && _.equals(state.active_line, pos)}) },
+      state.display.line_notes && m('span.line-note', {class: cx({active: state.play.line_notes[pos]}), onclick: () => actions.line_notes.toggle(pos, !state.play.line_notes[pos])}),
+      m('span.text', line),
+      m('span.extras',
+        state.display.dir_notes && m('span.dir-note', ' '),
+        state.display.cues && m('span.light-cue', {
+          class: cx({active: !!state.play.cues[pos]}),
+          onclick: () => {lightOpen = !lightOpen}
+        }, state.play.cues[pos] ? state.play.cues[pos][0].name : null,
+        cueOpen && m(CueModal, {onclose: () => {cueOpen = false;}})),
+        state.display.cues && m('span.sound-cue', ' '))
+    )
+  };
 }
 
 const SpeakingBlock = {
   view: ({attrs: {state, actions, block, pos}}) => {
     return block.length === 1
     ? m('p.direction', m(Line, {state, actions, line: block[0], pos: [...pos, 0]}))
-    : m('p.speaking-block', {'data-pos': pos}, m('span.character', state.play.characters[block[0]].name), block[1].map((line, l) => m(Line, {state, actions, line, pos: [...pos, l]})))
+    : m('p.speaking-block', {'data-pos': pos}, m('div.character', state.play.characters[block[0]].name), block[1].map((line, l) => m(Line, {state, actions, line, pos: [...pos, l]})))
   }
 }
 
 
 const Script = {
     view: (vnode) => {
-    const {attrs: {state, state: {play, play: {script}}, actions}} = vnode;
+    const {attrs: {state, state: {play, play: {script, title, author}}, actions}} = vnode;
     return m('div.script', {onscroll: _.debounce(250, () => {
       const element = [].slice.call(vnode.dom.querySelectorAll('.line'))
         .filter(line => line.getBoundingClientRect().y > vnode.dom.getBoundingClientRect().y)[0];
       const pos = element.attributes['data-pos'].value.split(',').map(x => parseInt(x));
       actions.active_line.update(pos);
     })},
-      m('div.title', script.title, ' by ', script.author),
+      m('div.title', play.title, ' by ', play.author),
       !!play && !_.equals(script, []) && script.map((act, a) =>
         m('div.act', act.map((scene, sc) => scene.map((block, l) =>
           m(SpeakingBlock, {state: state, actions: actions, block: block, pos: [a, sc, l]}) )) ))
@@ -170,19 +230,23 @@ const app = {
       stage: true,
       cues: true,
       dir_notes: true,
-      line_notes: false
+      line_notes: true
     },
     active_line: [0,0,0,0],
     play: {
       script: [],
       characters: {},
       title: '',
-      author: ''
+      author: '',
+      line_notes: {}
     },
     blocking: {}
   },
   actions: (update) => ({
     receive_data: (play) => update({play: play}),
+    line_notes: {
+      toggle: (pos, v) => update({play: PS({line_notes: PS({[pos]: v})})})
+    },
     display: {
       toggle_stage: () => update({display: PS({stage: S(v => !v)})}),
       toggle_cues: () => update({display: PS({cues: S(v => !v)})}),

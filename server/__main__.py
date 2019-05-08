@@ -56,6 +56,9 @@ def get_script():
     'ESCALUS': {'name': 'Escalus', 'short_name': 'E'},
     'ANGELO': {'name': 'Angelo', 'short_name': 'A'}
   }
+  play['cues'] = {
+    '0,0,0,0': [{'type': 'light', 'name': '1', 'message': 'Lights on!'}]
+  }
   
   return play
   
