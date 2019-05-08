@@ -3,17 +3,17 @@ Tasks
 
 
 Vishesh
+
 * write entire backend
-  * route for list of productions
-  * route for a single production
-  * create a simple route for storing all the data related to a production
+  * ~~route for list of productions~~
+  * ~~create a simple route for storing all the data related to a production~~
   * send all production changes to the server
   * retrieve changes from server when they happen
   * deploy server somewhere so this app works
 
 * Characters need to have a short name
 * Change the data structure for the blocking so that it's {character: {pos: [x,y],...},...}
-* Change input method to display all words in a speaking block
+* Change script display to display all words in a speaking block
   * scroll through lines rather than speaking blocks
   * markings/display for where blocking/line notes/cues/director notes are.
 * _Add cues_

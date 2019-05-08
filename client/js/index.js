@@ -1,28 +1,5 @@
-/**
-play > act > scene > direction | speaking_block > lines > words
-*/
-
-const script = {
-  title: "An Ideal Husband",
-  author: "Oscar Wilde",
-  date: "1895-02-03",
-  characters: {
-    "Mrs. Marchmont": '',
-    "Mabel Chiltern": '',
-    'Lord Goring': '',
-    'Lady Basildon': '',
-    'Lord Caversham': '',
-    'Lady Chiltern': '',
-    'Mrs. Cheveley': '',
-    'Lady Markby': ''
-  },
-  acts: [
-    [[["MRS.MARCHMONT.", " Going on to the Hartlocks’ to-night, Margaret?"], ["LADYBASILDON.", " I suppose so. Are you?"], ["MRS.MARCHMONT.", " Yes. Horribly tedious parties they give, don’t they?"], ["LADYBASILDON.", " Horribly tedious! Never know why I go. Never know why I go anywhere."], ["MRS.MARCHMONT.", " I come here to be educated."], ["LADYBASILDON.", " Ah! I hate being educated!"], ["MRS.MARCHMONT.", " So do I. It puts one almost on a level with the commercial classes, doesn’t it? But dear Gertrude Chiltern is always telling me that I should have some serious purpose in life. So I come here to try to find one."], ["LADYBASILDON.", " I don’t see anybody here to-night whom one could possibly call a serious purpose. The man who took me in to dinner talked to me about his wife the whole time."], ["MRS.MARCHMONT.", " How very trivial of him!"], ["LADYBASILDON.", " Terribly trivial! What did your man talk about?"], ["MRS.MARCHMONT.", " About myself."], ["LADYBASILDON.", " And were you interested?"], ["MRS.MARCHMONT.", " Not in the smallest degree."], ["LADYBASILDON.", " What martyrs we are, dear Margaret!"], ["MRS.MARCHMONT.", " And how well it becomes us, Olivia!"], ["LORDCAVERSHAM.", " Good evening, LADYCHILTERN! Has my good-for-nothing young son been here?"], ["LADYCHILTERN.", " I don’t think Lord Goring has arrived yet."], ["MABELCHILTERN.", " Why do you call Lord Goring good-for-nothing?"], ["LORDCAVERSHAM.", " Because he leads such an idle life."], ["MABELCHILTERN.", " How can you say such a thing? Why, he rides in the Row at ten o’clock in the morning, goes to the Opera three times a week, changes his clothes at least five times a day, and dines out every night of the season. You don’t call that leading an idle life, do you?"], ["LORDCAVERSHAM.", " You are a very charming young lady!"], ["MABELCHILTERN.", " How sweet of you to say that, LORDCAVERSHAM! Do come to us more often. You know we are always at home on Wednesdays, and you look so well with your star!"], ["LORDCAVERSHAM.", " Never go anywhere now. Sick of London Society. Shouldn’t mind being introduced to my own tailor; he always votes on the right side. But object strongly to being sent down to dinner with my wife’s milliner. Never could stand Lady Caversham’s bonnets."], ["MABELCHILTERN.", " Oh, I love London Society! I think it has immensely improved. It is entirely composed now of beautiful idiots and brilliant lunatics. Just what Society should be."], ["LORDCAVERSHAM.", " Hum! Which is Goring? Beautiful idiot, or the other thing?"], ["MABELCHILTERN.", " I have been obliged for the present to put Lord Goring into a class quite by himself. But he is developing charmingly!"], ["LORDCAVERSHAM.", " Into what?"], ["MABELCHILTERN.", " I hope to let you know very soon, LORDCAVERSHAM!"], ["MASON.", ""], ["LADYMARKBY.", ""], ["MRS.CHEVELEY.", ""], ["LADYMARKBY.", " Good evening, dear Gertrude! So kind of you to let me bring my friend,"], ["MRS.CHEVELEY.", " Two such charming women should know each other!"], ["LADYCHILTERN.", " I think Mrs. Cheveley and I have met before. I did not know she had married a second time."], ["LADYMARKBY.", " Ah, nowadays people marry as often as they can, don’t they? It is most fashionable. Dear Duchess, and how is the Duke? Brain still weak, I suppose? Well, that is only to be expected, is it not? His good father was just the same. There is nothing like race, is there?"], ["MRS.CHEVELEY.", " But have we really met before, LADYCHILTERN? I can’t remember where. I have been out of England for so long."], ["LADYCHILTERN.", " We were at school together,"], ["MRS.CHEVELEY.", ""], ["MRS.CHEVELEY.", " Indeed? I have forgotten all about my schooldays. I have a vague impression that they were detestable."], ["LADYCHILTERN.", " I am not surprised!"], ["MRS.CHEVELEY.", " Do you know, I am quite looking forward to meeting your clever husband,"], ["LADYCHILTERN.", " Since he has been at the Foreign Office, he has been so much talked of in Vienna. They actually succeed in spelling his name right in the newspapers. That in itself is fame, on the continent."], ["LADYCHILTERN.", " I hardly think there will be much in common between you and my husband, MRS.CHEVELEY!"], ["VICOMTEDENANJAC.", " Ah! chère Madame, queue surprise! I have not seen you since Berlin!"], ["MRS.CHEVELEY.", " Not since Berlin, Vicomte. Five years ago!"], ["VICOMTEDENANJAC.", " And you are younger and more beautiful than ever. How do you manage it?"], ["MRS.CHEVELEY.", " By making it a rule only to talk to perfectly charming people like yourself."], ["VICOMTEDENANJAC.", " Ah! you flatter me. You butter me, as they say here."], ["MRS.CHEVELEY.", " Do they say that here? How dreadful of them!"]]]
-  ]
-}
-
 const iconName = (s) => (l => l.length == 1 ? l[0].slice(0,2) : l[0][0] + l[1][0])(s.split(' '));
-const posCompare = (a1, a2) => _.zip(a1, a2).map(([x1, x2]) => x1 === x2 ? 0 : x1 < x2 ? -1 : 1).reduce((ans, next) => ans !== 0 ? ans : next, 0);
+const posCompare = (a1, a2) => _.zip(a1, a2).map(([x1, x2]) => !x1 || !x2 ? 0 : x1 === x2 ? 0 : x1 < x2 ? -1 : 1).reduce((ans, next) => ans !== 0 ? ans : next, 0);
 const decodeArray = (s) => s.split(',').map(x => parseInt(x));
 const cx = (classmap) => _.keys(_.pickBy((value, key) => _.isBoolean(value) && value, classmap)).join(' ');
 const maxCompare = (compare) => (l) => _.reduce((acc, next) => compare(acc, next) < 0 ? next : acc, _.head(l), _.tail(l));
@@ -39,27 +16,34 @@ function Word() {
 function Line() {
   return {
     view: ({attrs: {state, actions, line, pos}}) =>
-    line.length === 2
-    ? m('p.line', {onclick: onclick, 'data-pos': pos, class: cx({active: state.display.stage && _.equals(state.active_line, pos), selected: _.equals(state.selected_line, pos)})}, m('span.character', line[0]), line[1])
-    : m('p.direction', {onclick: onclick}, line[0])
+    m('span.line', {'data-pos': pos, class: cx({active: state.display.stage && _.equals(state.active_line, pos)}) }, line)
+  }
+}
+
+const SpeakingBlock = {
+  view: ({attrs: {state, actions, block, pos}}) => {
+    return block.length === 1
+    ? m('p.direction', {'data-pos': [...pos, 0], class: cx({active: state.display.stage && _.equals(state.active_line, [...pos, 0])})}, block[0])
+    : m('p.speaking-block', {'data-pos': pos}, m('div.character', block[0]), block[1].map((line, l) => m(Line, {state, actions, line, pos: [...pos, l]})))
   }
 }
 
 
 function Script() {
   return {
-    view: (vnode) =>
-    m('div.script', {onscroll: _.debounce(250, () => {
+    view: (vnode) => {
+    const {attrs: {state, state: {play, play: {script}}, actions}} = vnode;
+    return m('div.script', {onscroll: _.debounce(250, () => {
       const pos = [].slice.call(vnode.dom.children[1].children)
-        .filter(line => line.getBoundingClientRect().y > vnode.dom.getBoundingClientRect().y)[0]
+        .filter(block => block.getBoundingClientRect().y > vnode.dom.getBoundingClientRect().y)[0]
         .attributes['data-pos'].value.split(',').map(x => parseInt(x));
-      vnode.attrs.actions.active_line.update(pos);
+      actions.active_line.update(pos);
     })},
-      m('div.title', vnode.attrs.script.title, ' by ', vnode.attrs.script.author),
-      vnode.attrs.script.acts.map((act, a) =>
-        m('div.act', act.map((scene, sc) => scene.map((line, l) =>
-          m(Line, {state: vnode.attrs.state, actions: vnode.attrs.actions, line, pos: [a, sc, l], onclick: () => vnode.attrs.actions.active_line.update([a, sc, l]) }) )) ))
-    )
+      m('div.title', script.title, ' by ', script.author),
+      !!play && !_.equals(script, []) && script.map((act, a) =>
+        m('div.act', act.map((scene, sc) => scene.map((block, l) =>
+          m(SpeakingBlock, {state: state, actions: actions, block: block, pos: [a, sc, l]}) )) ))
+    )}
   }
 }
 
@@ -143,16 +127,17 @@ function StageDiagram() {
   return {
     onupdate: (vnode) => {
       active_line = vnode.attrs.line;
-      blocking = vnode.attrs.blocking;
+      blocking = vnode.attrs.play ? vnode.attrs.play.blocking : {};
+      console.log('position tracking', active_line, blocking);
     },
     onremove: () => {
       delete draggable;
     },
     view: ({attrs: {line, blocking, characters}}) => {
-      console.log('stage-diagram view: ', line, blocking);
+      // console.log('stage-diagram view: ', line, blocking);
       const b = characterMap(line, blocking);
-      console.log('b: ', b);
-      console.log('benched: ', _.omitBy((value, key) => !b ? false : key in b, characters));
+      // console.log('b: ', b);
+      // console.log('benched: ', _.omitBy((value, key) => !b ? false : key in b, characters));
       return m('div.stage-diagram',
         m('div.img-container',
           m('img.diagram', {src: 'img/img.png'}),
@@ -182,11 +167,11 @@ const ModeSelector = {
 }
 
 const App = {
-  view: ({attrs: {state, actions, script}}) =>
+  view: ({attrs: {state, actions}}) =>
     m('div.app',
       m(ModeSelector, {display: state.display, actions}),
-      state.display.stage && m(StageDiagram, {characters: script.characters, line: state.active_line, blocking: state.blocking, actions}),
-      m(Script, {script, state, actions}))
+      state.display.stage && m(StageDiagram, {characters: state.play ? state.play.characters : {}, line: state.active_line, blocking: state.blocking, actions}),
+      m(Script, {state, actions}))
 }
 
 const SS = (f) => S(x => {f(x); return x;})
@@ -200,17 +185,15 @@ const app = {
       line_notes: false
     },
     active_line: null,
-    cues: {},
-    blocking: {
-      '0,0,5': {
-        'Mabel Chiltern': [0.5, 0.5],
-        'Lord Caversham': [0.2, 0.3]
-      }
-    },
-    notes: {},
-    lines_missed: {}
+    play: {
+      script: [],
+      characters: {},
+      title: '',
+      author: ''
+    }
   },
   actions: (update) => ({
+    receive_data: (play) => update({play: play}),
     display: {
       toggle_stage: () => update({display: PS({stage: S(v => !v)})}),
       toggle_cues: () => update({display: PS({cues: S(v => !v)})}),
@@ -232,10 +215,11 @@ var update = m.stream();
 var states = m.stream.scan(P, app.initial_state, update);
 var actions = app.actions(update);
 
+m.request({method: 'GET', url: '/script'}).then((data) => actions.receive_data(data))
 
 m.route(document.getElementById('container'), '/',  {
   '/': {view: () => m('div', 'TODO')},
-  '/:id': {view: () => m(App, {script, state: states(), actions})},
+  '/:id': {view: () => m(App, {state: states(), actions})},
 });
 
 meiosisTracer({streams: [states]});

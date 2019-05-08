@@ -8,14 +8,16 @@ db = json.load(open('data/db.json'))
 
 # all the fields present in a production
 skeleton = {
-  'script': [],
-  'blocking': {},
+  # constant fields (don't get updated)
+  'title': '',
+  'author': '',
   'characters': {},
+  'script': [],
+  # modifiable fields - can change these fields.
+  'blocking': {},
   'cues': {},
   'line_notes': {},
   'director_notes': {},
-  'title': '',
-  'author': ''
 }
 
 app = Bottle()
@@ -44,6 +46,20 @@ def create_production(data):
   db[hash(data['name'])] = t.merge(skeleton, data, {'id': hash(data['name'])})
   return {'success': True}
 
+@app.get('/script')
+def get_script():
+  play = t.merge(skeleton, {'script': json.load(open('data/measure.json'))})
+  play['title'] = 'Measure for Measure'
+  play['author'] = 'William Shakespeare'
+  play['characters'] = {
+    'DUKE_VINCENTIO': {'name': 'Duke Vincentio', 'short_name': 'DV'},
+    'ESCALUS': {'name': 'Escalus', 'short_name': 'E'},
+    'ANGELO': {'name': 'Angelo', 'short_name': 'A'}
+  }
+  
+  return play
+  
+  
 staticroutestack(app, ['js', 'css', 'img'], 'client')
 
 if __name__ == '__main__':

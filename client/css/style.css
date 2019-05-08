@@ -100,20 +100,20 @@ button:focus {
   font-size: 150%;
 }
 
-.line.active {
+.line {
+  display: block;
+}
+
+.active {
   background-color: lightblue;
 }
 
-.line.selected, .line.active.selected {
-  background-color: lightyellow;
-}
-
-.line .character {
+.speaking-block .character {
   font-family: monospace;
   display: block;
 }
 
-.line .character::after {
+.speaking-block .character::after {
   content: ':';
 }
 
