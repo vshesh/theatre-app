@@ -89,6 +89,8 @@ button:focus {
   width: 90%;
   margin: 0 auto;
   height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .script {
@@ -100,7 +102,7 @@ button:focus {
   font-size: 150%;
 }
 
-.line {
+.speaking-block span {
   display: block;
 }
 
@@ -110,7 +112,6 @@ button:focus {
 
 .speaking-block .character {
   font-family: monospace;
-  display: block;
 }
 
 .speaking-block .character::after {

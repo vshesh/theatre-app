@@ -13,37 +13,34 @@ function Word() {
 }
 
 
-function Line() {
-  return {
+const Line = {
     view: ({attrs: {state, actions, line, pos}}) =>
     m('span.line', {'data-pos': pos, class: cx({active: state.display.stage && _.equals(state.active_line, pos)}) }, line)
-  }
 }
 
 const SpeakingBlock = {
   view: ({attrs: {state, actions, block, pos}}) => {
     return block.length === 1
-    ? m('p.direction', {'data-pos': [...pos, 0], class: cx({active: state.display.stage && _.equals(state.active_line, [...pos, 0])})}, block[0])
-    : m('p.speaking-block', {'data-pos': pos}, m('div.character', block[0]), block[1].map((line, l) => m(Line, {state, actions, line, pos: [...pos, l]})))
+    ? m('p.direction', m(Line, {state, actions, line: block[0], pos: [...pos, 0]}))
+    : m('p.speaking-block', {'data-pos': pos}, m('span.character', state.play.characters[block[0]].name), block[1].map((line, l) => m(Line, {state, actions, line, pos: [...pos, l]})))
   }
 }
 
 
-function Script() {
-  return {
+const Script = {
     view: (vnode) => {
     const {attrs: {state, state: {play, play: {script}}, actions}} = vnode;
     return m('div.script', {onscroll: _.debounce(250, () => {
-      const pos = [].slice.call(vnode.dom.children[1].children)
-        .filter(block => block.getBoundingClientRect().y > vnode.dom.getBoundingClientRect().y)[0]
-        .attributes['data-pos'].value.split(',').map(x => parseInt(x));
+      const element = [].slice.call(vnode.dom.querySelectorAll('.line'))
+        .filter(line => line.getBoundingClientRect().y > vnode.dom.getBoundingClientRect().y)[0];
+      const pos = element.attributes['data-pos'].value.split(',').map(x => parseInt(x));
       actions.active_line.update(pos);
     })},
       m('div.title', script.title, ' by ', script.author),
       !!play && !_.equals(script, []) && script.map((act, a) =>
         m('div.act', act.map((scene, sc) => scene.map((block, l) =>
           m(SpeakingBlock, {state: state, actions: actions, block: block, pos: [a, sc, l]}) )) ))
-    )}
+    )
   }
 }
 
