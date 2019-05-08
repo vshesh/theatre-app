@@ -56,7 +56,7 @@ function StageDiagram() {
     return !line ? {} : _.omitBy(_.isUndefined, _.mapValues(_.flow([
       _.toPairs,
       _.map( ([k,v]) => [decodeArray(k), v]),
-      _.filter( ([k,v]) => posCompare(k, line) <= 0),
+      _.filter( ([k,v]) => posCompare(k, line) <= 0 && posCompare(k, [line[0], line[1], 0, 0]) >= 0),
       maxCompare((x,y) => posCompare(x[0], y[0])),
       _.last
     ]), blocking));
@@ -125,9 +125,7 @@ function StageDiagram() {
       delete draggable;
     },
     view: ({attrs: {line, blocking, characters}}) => {
-      console.log('bb', blocking);
       const b = characterMap(line, blocking);
-      console.log('blocking info', b);
       return m('div.stage-diagram',
         m('div.img-container',
           m('img.diagram', {src: 'img/img.png'}),
