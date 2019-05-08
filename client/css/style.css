@@ -54,6 +54,7 @@ html,body,#container {
 .stage-diagram img {
   display: block;
   max-height: 400px;
+  max-width: 400px;
 }
 
 .diagram {

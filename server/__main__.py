@@ -3,6 +3,9 @@ from server.params import params, jsonabort
 from server.staticroute import staticroutestack
 import toolz as t
 
+class 
+
+
 app = Bottle()
 
 @app.get('/')

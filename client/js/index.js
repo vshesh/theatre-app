@@ -181,7 +181,6 @@ const SS = (f) => S(x => {f(x); return x;})
 
 const app = {
   initial_state: {
-    selected_line: null,
     active_line: null,
     cues: {},
     blocking: {
@@ -212,8 +211,11 @@ var update = m.stream();
 var states = m.stream.scan(P, app.initial_state, update);
 var actions = app.actions(update);
 
-m.mount(document.getElementById('container'), {
-  view: () => m(App, {script, state: states(), actions})
+
+m.route(document.getElementById('container'), '/' ,  {
+  '/': ,
+  '/:id': {view: () => m(App, {script, state: states(), actions})},
+  '/new': {view: () => m(Onboarding, {...})}
 });
 
 meiosisTracer({streams: [states]});
