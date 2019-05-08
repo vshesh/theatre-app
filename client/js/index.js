@@ -1,5 +1,5 @@
 const iconName = (s) => (l => l.length == 1 ? l[0].slice(0,2) : l[0][0] + l[1][0])(s.split(' '));
-const posCompare = (a1, a2) => _.zip(a1, a2).map(([x1, x2]) => !x1 || !x2 ? 0 : x1 === x2 ? 0 : x1 < x2 ? -1 : 1).reduce((ans, next) => ans !== 0 ? ans : next, 0);
+const posCompare = (a1, a2) => _.zip(a1, a2).map(([x1, x2]) => !_.isNumber(x1) || !_.isNumber(x2) ? 0 : x1 === x2 ? 0 : x1 < x2 ? -1 : 1).reduce((ans, next) => ans !== 0 ? ans : next, 0);
 const decodeArray = (s) => s.split(',').map(x => parseInt(x));
 const cx = (classmap) => _.keys(_.pickBy((value, key) => _.isBoolean(value) && value, classmap)).join(' ');
 const maxCompare = (compare) => (l) => _.reduce((acc, next) => compare(acc, next) < 0 ? next : acc, _.head(l), _.tail(l));
@@ -53,20 +53,20 @@ function StageDiagram() {
   let enterable = interact('.stage-diagram .benched-character');
   
   function characterMap(line, blocking) {
-    return !line ? {} : _.flow([
+    return !line ? {} : _.omitBy(_.isUndefined, _.mapValues(_.flow([
       _.toPairs,
       _.map( ([k,v]) => [decodeArray(k), v]),
       _.filter( ([k,v]) => posCompare(k, line) <= 0),
       maxCompare((x,y) => posCompare(x[0], y[0])),
       _.last
-    ])(blocking);
+    ]), blocking));
   }
   draggable.draggable({
       onend: function(e) {
         let rect = interact.getElementRect(e.target.parentNode);
         let value = [(e.pageX - rect.left)/rect.width, (e.pageY - rect.top)/rect.height];
-        console.log('drag finished', active_line, e.target, value);
-        actions.blocking.update(active_line, Object.assign({}, characterMap(active_line, blocking), {[e.target.title]: value}));
+        console.log('drag finished', active_line, e.target.title, value);
+        actions.blocking.update(e.target.title, active_line, value);
       },
       onmove: function(e) {
         let rect = interact.getElementRect(e.target.parentNode);
@@ -86,22 +86,13 @@ function StageDiagram() {
       accept: '.benched-character',
       overlap: 0.5,
       ondrop: function (e) {
-        console.log('drop!', e.relatedTarget.getBoundingClientRect());
         let dot = e.relatedTarget.getBoundingClientRect();
         let stage = e.target.getBoundingClientRect();
+        console.log('in drop: ', dot, stage);
         let value = [(dot.x-stage.x)/stage.width, (dot.y-stage.y)/stage.height];
-        (_.flow([
-          _.toPairs,
-          _.map( ([k,v]) => [decodeArray(k), v]),
-          _.filter( ([k,v]) => posCompare(k, active_line) >= 0)
-        ])(blocking))
-        .map(([line,v]) =>
-        actions.blocking.update(
-          line,
-          Object.assign({}, v, {[e.relatedTarget.title]: value})))
-        actions.blocking.update(
-          active_line,
-          Object.assign({}, characterMap(active_line, blocking), {[e.relatedTarget.title]: value}))
+        console.log('drop!', e.relatedTarget.title, active_line, value);
+        actions.blocking.update(e.relatedTarget.title, active_line, value)
+        m.redraw();
       }
     });
     enterable.draggable({
@@ -119,6 +110,9 @@ function StageDiagram() {
         // update the posiion attributes
         target.setAttribute('data-x', x);
         target.setAttribute('data-y', y);
+      },
+      onend: function(event) {
+        _.delay(50, () => event.target.style.webkitTransform = event.target.style.transform = "");
       }
     });
   return {
@@ -131,19 +125,18 @@ function StageDiagram() {
       delete draggable;
     },
     view: ({attrs: {line, blocking, characters}}) => {
-      // console.log('stage-diagram view: ', line, blocking);
+      console.log('bb', blocking);
       const b = characterMap(line, blocking);
-      // console.log('b: ', b);
-      // console.log('benched: ', _.omitBy((value, key) => !b ? false : key in b, characters));
+      console.log('blocking info', b);
       return m('div.stage-diagram',
         m('div.img-container',
           m('img.diagram', {src: 'img/img.png'}),
           _.toPairs(b).map(item =>
-            m('span.character', {title: item[0], key: item[0], style: {left: `${100*item[1][0]}%`, top: `${100*item[1][1]}%`}}, iconName(item[0]) ))
+            m('span.character', {title: item[0], key: item[0], style: {left: `${100*item[1][0]}%`, top: `${100*item[1][1]}%`}}, characters[item[0]].short_name ))
         ),
         m('div.character-selector',
           _.toPairs(_.omitBy((value, key) => !b ? false : key in b, characters)).map(([key, value]) =>
-          m('span.benched-character', {title: key, key: key}, iconName(key) )))
+          m('span.benched-character', {title: key, key: key}, characters[key].short_name )))
       );
     }
   }
@@ -181,13 +174,14 @@ const app = {
       dir_notes: true,
       line_notes: false
     },
-    active_line: null,
+    active_line: [0,0,0,0],
     play: {
       script: [],
       characters: {},
       title: '',
       author: ''
-    }
+    },
+    blocking: {}
   },
   actions: (update) => ({
     receive_data: (play) => update({play: play}),
@@ -201,9 +195,7 @@ const app = {
       update: (pos) => update({active_line: pos})
     },
     blocking: {
-      add: (pos) => update({blocking: SS(b => b.set(pos, {}))}),
-      remove: (pos) => update({blocking: SS(b => b.delete(pos))}),
-      update: (pos, characters) => update({blocking: PS({[pos]: PS(characters)})})
+      update: (character, pos, value) => update({blocking: PS({[character]: {[pos]: value} }) })
     }
   })
 }
