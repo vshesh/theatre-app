@@ -9,6 +9,30 @@ html,body,#container {
   overflow-y: hidden;
 }
 
+
+button:focus {
+  outline: none;
+}
+
+.mode-selector {
+  display: flex;
+}
+
+.mode-selector button {
+  flex: 1;
+  padding: 0.5em;
+  border-radius: 2%;
+  border: none;
+  margin: 0 5px;
+  background: grey;
+  color: white;
+}
+
+.mode-selector button.active {
+  background: #eee;
+  color: black;
+}
+
 .stage-diagram .character-selector {
   padding: 10px;
 }

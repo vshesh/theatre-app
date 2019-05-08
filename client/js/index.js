@@ -24,7 +24,7 @@ const script = {
 const iconName = (s) => (l => l.length == 1 ? l[0].slice(0,2) : l[0][0] + l[1][0])(s.split(' '));
 const posCompare = (a1, a2) => _.zip(a1, a2).map(([x1, x2]) => x1 === x2 ? 0 : x1 < x2 ? -1 : 1).reduce((ans, next) => ans !== 0 ? ans : next, 0);
 const decodeArray = (s) => s.split(',').map(x => parseInt(x));
-const cx = (classmap) => _.keys(_.pickBy((value, key) => _.isBoolean(value) && value, classmap)).join(',');
+const cx = (classmap) => _.keys(_.pickBy((value, key) => _.isBoolean(value) && value, classmap)).join(' ');
 const maxCompare = (compare) => (l) => _.reduce((acc, next) => compare(acc, next) < 0 ? next : acc, _.head(l), _.tail(l));
 
 
@@ -40,7 +40,7 @@ function Line() {
   return {
     view: ({attrs: {state, actions, line, pos}}) =>
     line.length === 2
-    ? m('p.line', {onclick: onclick, 'data-pos': pos, class: cx({active: _.equals(state.active_line, pos), selected: _.equals(state.selected_line, pos)})}, m('span.character', line[0]), line[1])
+    ? m('p.line', {onclick: onclick, 'data-pos': pos, class: cx({active: state.display.stage && _.equals(state.active_line, pos), selected: _.equals(state.selected_line, pos)})}, m('span.character', line[0]), line[1])
     : m('p.direction', {onclick: onclick}, line[0])
   }
 }
@@ -144,8 +144,6 @@ function StageDiagram() {
     onupdate: (vnode) => {
       active_line = vnode.attrs.line;
       blocking = vnode.attrs.blocking;
-
-
     },
     onremove: () => {
       delete draggable;
@@ -169,11 +167,25 @@ function StageDiagram() {
   }
 }
 
+const DisplayToggle = {
+  view: ({attrs: {name, state, ontoggle}}) =>
+    m('button', {onclick: ontoggle, class: cx({'active': state})}, name)
+}
+
+const ModeSelector = {
+  view: ({attrs: {display, actions}}) =>
+    m('div.mode-selector',
+      m(DisplayToggle, {name: 'Stage', state: display.stage, ontoggle: actions.display.toggle_stage}),
+      m(DisplayToggle, {name: 'Cues', state: display.cues, ontoggle: actions.display.toggle_cues}),
+      m(DisplayToggle, {name: 'Line Notes', state: display.line_notes, ontoggle: actions.display.toggle_line_notes}),
+      m(DisplayToggle, {name: 'Dir Notes', state: display.dir_notes, ontoggle: actions.display.toggle_dir_notes}))
+}
 
 const App = {
   view: ({attrs: {state, actions, script}}) =>
     m('div.app',
-      m(StageDiagram, {characters: script.characters, line: state.active_line, blocking: state.blocking, actions}),
+      m(ModeSelector, {display: state.display, actions}),
+      state.display.stage && m(StageDiagram, {characters: script.characters, line: state.active_line, blocking: state.blocking, actions}),
       m(Script, {script, state, actions}))
 }
 
@@ -181,6 +193,12 @@ const SS = (f) => S(x => {f(x); return x;})
 
 const app = {
   initial_state: {
+    display: {
+      stage: true,
+      cues: true,
+      dir_notes: true,
+      line_notes: false
+    },
     active_line: null,
     cues: {},
     blocking: {
@@ -193,8 +211,11 @@ const app = {
     lines_missed: {}
   },
   actions: (update) => ({
-    selected_line: {
-      update: (pos) => update({selected_line: pos})
+    display: {
+      toggle_stage: () => update({display: PS({stage: S(v => !v)})}),
+      toggle_cues: () => update({display: PS({cues: S(v => !v)})}),
+      toggle_line_notes: () => update({display: PS({line_notes: S(v => !v)})}),
+      toggle_dir_notes: () => update({display: PS({dir_notes: S(v => !v)})})
     },
     active_line: {
       update: (pos) => update({active_line: pos})
@@ -212,10 +233,9 @@ var states = m.stream.scan(P, app.initial_state, update);
 var actions = app.actions(update);
 
 
-m.route(document.getElementById('container'), '/' ,  {
-  '/': ,
+m.route(document.getElementById('container'), '/',  {
+  '/': {view: () => m('div', 'TODO')},
   '/:id': {view: () => m(App, {script, state: states(), actions})},
-  '/new': {view: () => m(Onboarding, {...})}
 });
 
 meiosisTracer({streams: [states]});
