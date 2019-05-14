@@ -1,4 +1,4 @@
-from bottle import run, Bottle, static_file
+from bottle import run, Bottle, static_file, request
 from server.params import params, jsonabort
 from server.staticroute import staticroutestack
 import toolz as t
@@ -34,34 +34,37 @@ def all_productions():
 def read_production(pid):
   return db[pid]
 
-@params(['data'])
 @app.route('/production/:pid', method=['PUT', 'PATCH'])
+@params(['data'])
 def update_production(pid, data):
-  db[pid] = t.merge(db[pid], data, {'id': pid})
+  db[pid] = t.merge(db.get(pid, {}), json.loads(data), {'id': pid})
+  with open('data/db.json', 'w') as dbfile:
+    dbfile.write(json.dumps(db, indent='  '))
   return db[pid]
 
-@params(['data'])
 @app.post('/production')
+@params(['data'])
 def create_production(data):
   db[hash(data['name'])] = t.merge(skeleton, data, {'id': hash(data['name'])})
   return {'success': True}
 
 @app.get('/script')
 def get_script():
-  play = t.merge(skeleton, {'script': json.load(open('data/measure.json'))})
-  play['title'] = 'Measure for Measure'
-  play['author'] = 'William Shakespeare'
-  play['characters'] = {
-    'DUKE_VINCENTIO': {'name': 'Duke Vincentio', 'short_name': 'DV'},
-    'ESCALUS': {'name': 'Escalus', 'short_name': 'E'},
-    'ANGELO': {'name': 'Angelo', 'short_name': 'A'}
-  }
-  play['cues'] = {
-    '0,0,0,0': [{'type': 'light', 'name': '1', 'message': 'Lights on!'}]
-  }
-  
-  return play
-  
+  with open('data/measure.json') as f:
+    play = t.merge(skeleton, {'script': json.load(f)})
+    play['title'] = 'Measure for Measure'
+    play['id'] = 1
+    play['author'] = 'William Shakespeare'
+    play['characters'] = {
+      'DUKE_VINCENTIO': {'name': 'Duke Vincentio', 'short_name': 'DV'},
+      'ESCALUS': {'name': 'Escalus', 'short_name': 'E'},
+      'ANGELO': {'name': 'Angelo', 'short_name': 'A'}
+    }
+    play['cues'] = {
+      '0,0,0,0': [{'type': 'light', 'name': '1', 'message': 'Lights on!'}]
+    }
+    
+    return play
   
 staticroutestack(app, ['js', 'css', 'img'], 'client')
 

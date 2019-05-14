@@ -30,7 +30,7 @@ const Modal = function() {
     },
     onbeforeremove() {
       // Add a class with fade-out exit animation
-      dom.classList.add('hide')
+      dom.classList.add('hide');
       return new Promise(r => {
         dom.addEventListener('animationend', r)
       })
@@ -59,10 +59,9 @@ const CueModal = {
 }
 
 function Line() {
-  let cueOpen, lightOpen, dirNoteOpen = false;
   return {
-    view: ({attrs: {state, actions, line, pos}}) =>
-    m('span.line',
+    view: ({attrs: {state, actions, line, pos}}) => {
+    return m('span.line',
       {'data-pos': pos, class: cx({active: state.display.stage && _.equals(state.active_line, pos)}) },
       state.display.line_notes && m('span.line-note', {class: cx({active: state.play.line_notes[pos]}), onclick: () => actions.line_notes.toggle(pos, !state.play.line_notes[pos])}),
       m('span.text', line),
@@ -70,11 +69,11 @@ function Line() {
         state.display.dir_notes && m('span.dir-note', ' '),
         state.display.cues && m('span.light-cue', {
           class: cx({active: !!state.play.cues[pos]}),
-          onclick: () => {lightOpen = !lightOpen}
+          onclick: () => actions.display.toggle_light_modal()
         }, state.play.cues[pos] ? state.play.cues[pos][0].name : null,
-        cueOpen && m(CueModal, {onclose: () => {cueOpen = false;}})),
+        state.display.light_modal && m(CueModal, {onclose: () => actions.display.toggle_light_modal(), cue: state.play.cues[0]})),
         state.display.cues && m('span.sound-cue', ' '))
-    )
+    )}
   };
 }
 
@@ -172,7 +171,9 @@ function StageDiagram() {
         target.setAttribute('data-y', y);
       },
       onend: function(event) {
-        _.delay(50, () => event.target.style.webkitTransform = event.target.style.transform = "");
+        event.target.setAttribute('data-x', 0);
+        event.target.setAttribute('data-y', 0);
+        _.delay(100, () => event.target.style.webkitTransform = event.target.style.transform = "");
       }
     });
   return {
@@ -222,15 +223,14 @@ const App = {
       m(Script, {state, actions}))
 }
 
-const SS = (f) => S(x => {f(x); return x;})
-
 const app = {
   initial_state: {
     display: {
       stage: true,
       cues: true,
       dir_notes: true,
-      line_notes: true
+      line_notes: true,
+      light_modal: false
     },
     active_line: [0,0,0,0],
     play: {
@@ -239,8 +239,7 @@ const app = {
       title: '',
       author: '',
       line_notes: {}
-    },
-    blocking: {}
+    }
   },
   actions: (update) => ({
     receive_data: (play) => update({play: play}),
@@ -251,13 +250,14 @@ const app = {
       toggle_stage: () => update({display: PS({stage: S(v => !v)})}),
       toggle_cues: () => update({display: PS({cues: S(v => !v)})}),
       toggle_line_notes: () => update({display: PS({line_notes: S(v => !v)})}),
-      toggle_dir_notes: () => update({display: PS({dir_notes: S(v => !v)})})
+      toggle_dir_notes: () => update({display: PS({dir_notes: S(v => !v)})}),
+      toggle_light_modal: () => update({display: PS({light_modal: S(v => !v)})})
     },
     active_line: {
       update: (pos) => update({active_line: pos})
     },
     blocking: {
-      update: (character, pos, value) => update({blocking: PS({[character]: {[pos]: value} }) })
+      update: (character, pos, value) => update({play: PS({blocking: PS({[character]: {[pos]: value} }) }) })
     }
   })
 }
@@ -265,6 +265,21 @@ const app = {
 var update = m.stream();
 var states = m.stream.scan(P, app.initial_state, update);
 var actions = app.actions(update);
+
+function unique(s) {
+    var set = new Set();
+    return s.map(function (v) {
+        if (set.has(v)) return Stream.SKIP
+        set.add(v)
+        return v
+    })
+}
+
+unique(states.map(s => s.play)).map(p => p.id && m.request({
+  method: 'PUT',
+  url: '/production/'+p.id,
+  data: {data: p}
+}));
 
 m.request({method: 'GET', url: '/script'}).then((data) => actions.receive_data(data))
 
