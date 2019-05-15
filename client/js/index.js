@@ -180,7 +180,6 @@ function StageDiagram() {
     onupdate: (vnode) => {
       active_line = vnode.attrs.line;
       blocking = vnode.attrs.play ? vnode.attrs.play.blocking : {};
-      console.log('position tracking', active_line, blocking);
     },
     onremove: () => {
       delete draggable;
@@ -262,24 +261,26 @@ const app = {
   })
 }
 
-var update = m.stream();
-var states = m.stream.scan(P, app.initial_state, update);
-var actions = app.actions(update);
+let update = m.stream();
+let states = m.stream.scan(P, app.initial_state, update);
+let actions = app.actions(update);
 
 function unique(s) {
-    var set = new Set();
-    return s.map(function (v) {
-        if (set.has(v)) return Stream.SKIP
-        set.add(v)
-        return v
-    })
+  let previous = null;
+  return s.map(v => {
+    if (previous !== null && _.isEqual(v, previous)) return m.stream.SKIP;
+    previous = _.cloneDeep(v);
+    return v;
+  });
 }
 
-unique(states.map(s => s.play)).map(p => p.id && m.request({
-  method: 'PUT',
-  url: '/production/'+p.id,
-  data: {data: p}
-}));
+unique(states.map(s => s.play)).map(p =>
+  p.id && m.request({
+    method: 'PUT',
+    url: `/production/${p.id}`,
+    data: {data: p}
+  })
+);
 
 m.request({method: 'GET', url: '/script'}).then((data) => actions.receive_data(data))
 

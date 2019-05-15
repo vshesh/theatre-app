@@ -37,7 +37,7 @@ def read_production(pid):
 @app.route('/production/:pid', method=['PUT', 'PATCH'])
 @params(['data'])
 def update_production(pid, data):
-  db[pid] = t.merge(db.get(pid, {}), json.loads(data), {'id': pid})
+  db[pid] = t.merge(db.get(pid, {}), data, {'id': pid})
   with open('data/db.json', 'w') as dbfile:
     dbfile.write(json.dumps(db, indent='  '))
   return db[pid]
@@ -53,7 +53,7 @@ def get_script():
   with open('data/measure.json') as f:
     play = t.merge(skeleton, {'script': json.load(f)})
     play['title'] = 'Measure for Measure'
-    play['id'] = 1
+    play['id'] = '1'
     play['author'] = 'William Shakespeare'
     play['characters'] = {
       'DUKE_VINCENTIO': {'name': 'Duke Vincentio', 'short_name': 'DV'},

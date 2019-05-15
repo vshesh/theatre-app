@@ -149,9 +149,7 @@
         ]
       ]
     ],
-    "blocking": {
-      
-    },
+    "blocking": {},
     "cues": {
       "0,0,0,0": [
         {
@@ -162,11 +160,9 @@
       ]
     },
     "line_notes": {
-      
+      "0,0,0,0": false
     },
-    "director_notes": {
-      
-    },
+    "director_notes": {},
     "id": "1"
   }
 }
