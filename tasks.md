@@ -4,42 +4,36 @@ Tasks
 
 Vishesh
 
-* write entire backend
-  * ~~route for list of productions~~
-  * ~~create a simple route for storing all the data related to a production~~
-  * send all production changes to the server
-  * retrieve changes from server when they happen
-  * deploy server somewhere so this app works
+1) Line notes
+2) director notes
+3) Cues
+4) blocking
 
-* Characters need to have a short name
-* Change the data structure for the blocking so that it's {character: {pos: [x,y],...},...}
-* Change script display to display all words in a speaking block
-  * scroll through lines rather than speaking blocks
-  * markings/display for where blocking/line notes/cues/director notes are.
-* _Add cues_
-* add 'director' notes
-* rewrite the portion that does the drag and drop
+* code modal dialogs for cues/director notes
+* labels for the different icons in the script
+* move character icons to right of stage rather than underneath.
+* deploy server somewhere so this app works
+* Add logging (google analytics)
+  * any change to the play information
+  *
 
 Rachel
 * Fix measure for measure script
-* File parser (1hr) (python)
-* Positions "hold" only until end of scene - characterMap should stop looking backwards at scene boundaries (i.e, filter to blocking only in this scene).
-* _add line notes_
-  * Ability to make an email (make a dialog with text you can copy/paste)
+* Ability to make an email (make a dialog with text you can copy/paste)
 * design cue/notes dialogs
+* design clear line notes button & the email dialog
 * Table of contents for script
   * Scroll to position in script
+
+Optional
+============
+
 * onboarding flow
   * screen for multiple productions
   * add an image and a script (in a specified simple format)
   * fix the parser
   * put measure for measure in our app
-
-* Add logging (google analytics)
-
-Optional
-============
-
+* rewrite the portion that does the drag and drop
 * Settings
   * clear all information about production
   * delete production?

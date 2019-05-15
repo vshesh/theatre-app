@@ -20,7 +20,7 @@ const Modal = function() {
       // Append a modal container to the end of body
       dom = document.createElement('div')
       // The modal class has a fade-in animation
-      dom.className = 'modal'
+      dom.className = 'modal-container'
       document.body.appendChild(dom)
       // Mount a separate VDOM tree here
       m.mount(dom, ModalContainer)
@@ -46,33 +46,49 @@ const Modal = function() {
 }
 
 
+const CueModal = {
+  view: ({attrs: {actions, onclose, cue}}) =>
+    m(Modal,
+      m('div.modal.cue-modal',
+        m('div.modal-header',
+          m('div.modal-header-left',
+          m('span.cue-type', cue.type, ' ', 'cue'),
+          m('input.cue-name', {type: 'field', value:  cue.name})),
+          m('button.pure-button.close-button', {onclick: onclose}, 'X')),
+        m('textarea.cue-message', {value: cue.message}),
+        m('div.modal-footer',
+          m('button.warning.pure-button', 'Delete'),
+          m('button.primary.pure-button', 'Save'))))
+}
+
+
 function Word() {
   return {
-    view: ({attrs: {word, onclick}}) =>
-      m('span.word', word)
+    view: ({attrs: {state, actions, word, pos}}) =>
+      m('span.word', {
+          onclick: () => actions.line_notes.toggle(pos, !state.play.line_notes[pos]),
+          class: cx({'word-missed': state.play.line_notes[pos]})
+        }, word)
   }
 }
 
-const CueModal = {
-  view: ({attrs: {onclose}}) =>
-    m(Modal, m('button', {onclick: onclose}, 'done'))
-}
 
 function Line() {
+  let lightModal = false;
   return {
     view: ({attrs: {state, actions, line, pos}}) => {
     return m('span.line',
       {'data-pos': pos, class: cx({active: state.display.stage && _.equals(state.active_line, pos)}) },
       state.display.line_notes && m('span.line-note', {class: cx({active: state.play.line_notes[pos]}), onclick: () => actions.line_notes.toggle(pos, !state.play.line_notes[pos])}),
-      m('span.text', line),
+      m('span.text', line.split(' ').map((w,i) => m(Word, {state, actions, word: w + ' ', pos: [...pos, i]}))),
       m('span.extras',
         state.display.dir_notes && m('span.dir-note', ' '),
-        state.display.cues && m('span.light-cue', {
+        false && state.display.cues && m('span.light-cue', {
           class: cx({active: !!state.play.cues[pos]}),
-          onclick: () => actions.display.toggle_light_modal()
+          onclick: () => {lightModal = !lightModal}
         }, state.play.cues[pos] ? state.play.cues[pos][0].name : null,
-        state.display.light_modal && m(CueModal, {onclose: () => actions.display.toggle_light_modal(), cue: state.play.cues[0]})),
-        state.display.cues && m('span.sound-cue', ' '))
+        lightModal && m(CueModal, {actions: actions, onclose: () => {lightModal = false}, cue: state.play.cues[pos][0]})),
+        false && state.display.cues && m('span.sound-cue', ' '))
     )}
   };
 }
@@ -202,16 +218,16 @@ function StageDiagram() {
 
 const DisplayToggle = {
   view: ({attrs: {name, state, ontoggle}}) =>
-    m('button', {onclick: ontoggle, class: cx({'active': state})}, name)
+    m('button.pure-button', {onclick: ontoggle, class: cx({'active': state})}, name)
 }
 
 const ModeSelector = {
   view: ({attrs: {display, actions}}) =>
     m('div.mode-selector',
       m(DisplayToggle, {name: 'Stage', state: display.stage, ontoggle: actions.display.toggle_stage}),
-      m(DisplayToggle, {name: 'Cues', state: display.cues, ontoggle: actions.display.toggle_cues}),
+      false && m(DisplayToggle, {name: 'Cues', state: display.cues, ontoggle: actions.display.toggle_cues}),
       m(DisplayToggle, {name: 'Line Notes', state: display.line_notes, ontoggle: actions.display.toggle_line_notes}),
-      m(DisplayToggle, {name: 'Dir Notes', state: display.dir_notes, ontoggle: actions.display.toggle_dir_notes}))
+      m(DisplayToggle, {name: 'Director Notes', state: display.dir_notes, ontoggle: actions.display.toggle_dir_notes}))
 }
 
 const App = {
@@ -228,8 +244,7 @@ const app = {
       stage: true,
       cues: true,
       dir_notes: true,
-      line_notes: true,
-      light_modal: false
+      line_notes: true
     },
     active_line: [0,0,0,0],
     play: {
@@ -249,8 +264,7 @@ const app = {
       toggle_stage: () => update({display: PS({stage: S(v => !v)})}),
       toggle_cues: () => update({display: PS({cues: S(v => !v)})}),
       toggle_line_notes: () => update({display: PS({line_notes: S(v => !v)})}),
-      toggle_dir_notes: () => update({display: PS({dir_notes: S(v => !v)})}),
-      toggle_light_modal: () => update({display: PS({light_modal: S(v => !v)})})
+      toggle_dir_notes: () => update({display: PS({dir_notes: S(v => !v)})})
     },
     active_line: {
       update: (pos) => update({active_line: pos})

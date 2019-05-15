@@ -1,6 +1,7 @@
 html, body {
   margin: 0;
   padding: 0;
+  font-size: 14px;
 }
 
 html,body,#container {
@@ -21,12 +22,7 @@ button:focus {
 
 .mode-selector button {
   flex: 1;
-  padding: 0.5em;
-  border-radius: 2%;
-  border: none;
   margin: 0 2.5px;
-  background: #eee;
-  color: black;
 }
 
 .mode-selector button.active {
@@ -101,6 +97,10 @@ button:focus {
 
 .act {
   margin: 0 20px;
+}
+
+.line span.word-missed {
+  background-color: orange;
 }
 
 .line {
@@ -180,16 +180,66 @@ button:focus {
   font-style: italic;
 }
 
-.modal {
+.modal-container {
   z-index: 100;
   position: fixed; /* Stay in place */
   z-index: 1; /* Sit on top */
   left: 0;
   top: 0;
-  width: 80%; /* Full width */
-  height: 80%; /* Full height */
+  width: 100%; /* Full width */
+  height: 100%; /* Full height */
   margin: auto auto;
   overflow: auto; /* Enable scroll if needed */
   background-color: rgb(0,0,0); /* Fallback color */
   background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+
+.modal {
+  width: 50%;
+  background-color: white;
+  margin: 0 auto;
+  margin-top: 20px;
+  border-radius: 2px;
+  box-shadow: 0px 1px 2px 0px;
+  padding: 5px 20px;
+  border: 1px solid #888;
+}
+
+.cue-modal {
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-header, .modal-footer {
+  display: flex;
+}
+
+.modal-header {
+  justify-content: space-between;
+  padding: 5px 0;
+}
+
+.modal-header > .close-button, .modal-header > .cue-type {
+  flex: initial;
+}
+
+.cue-modal .cue-message {
+  display: block;
+  width: 99%;
+  min-height: 100px;
+  outline: none;
+  padding: 0;
+  margin: 2px;
+}
+
+.modal-footer > button {
+  flex: 1;
+}
+
+button.warning {
+  background-color: #ffdddd;
+}
+
+button.primary {
+  background-color: #ddffdd;
 }
