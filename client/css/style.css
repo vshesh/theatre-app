@@ -30,53 +30,54 @@ button:focus {
   color: white;
 }
 
-.stage-diagram .character-selector {
-  padding: 10px;
-}
-
-.stage-diagram .character-selector .benched-character {
-  padding: 5px;
-  display: inline-block;
-  border-radius: 50%;
-  background: #ff000088;
-  margin: 5px;
-  touch-action: none;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  -o-user-select: none;
-  user-select: none;
-}
-
 .stage-diagram {
-  text-align: center;
+  display: flex;
+  justify-content: center;
 }
 
-.stage-diagram .character {
-  background: red;
-  color: white;
-  padding: 5px;
-  border-radius: 50%;
-  position: absolute;
-  transform: translate(-50%, -50%);
-  touch-action: none;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  -o-user-select: none;
-  user-select: none;
-}
+  .stage-diagram .character-selector {
+    padding: 10px;
+    display: flex;
+    flex-direction: column;}
 
-.stage-diagram .img-container {
-  position: relative;
-  display: inline-block;
-}
+    .stage-diagram .character-selector .benched-character {
+      padding: 5px;
+      display: inline-block;
+      border-radius: 50%;
+      background: #ff000088;
+      margin: 5px;
+      touch-action: none;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      -o-user-select: none;
+      user-select: none;
+    }
 
-.stage-diagram img {
-  display: block;
-  max-height: 400px;
-  max-width: 400px;
-}
+  .stage-diagram .character {
+    background: #ff000088;
+    padding: 5px;
+    border-radius: 50%;
+    position: absolute;
+    transform: translate(-50%, -50%);
+    touch-action: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    -o-user-select: none;
+    user-select: none;
+  }
+
+  .stage-diagram .img-container {
+    position: relative;
+    display: inline-block;
+  }
+
+  .stage-diagram img {
+    display: block;
+    max-height: 400px;
+    max-width: 400px;
+  }
 
 .diagram {
   width: 100%;

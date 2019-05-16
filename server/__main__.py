@@ -1,3 +1,5 @@
+import os
+import sys
 from bottle import run, Bottle, static_file, request
 from server.params import params, jsonabort
 from server.staticroute import staticroutestack
@@ -63,10 +65,14 @@ def get_script():
     play['cues'] = {
       '0,0,0,0': [{'type': 'light', 'name': '1', 'message': 'Lights on!'}]
     }
+    play['director_notes'] = {
+      '0,0,0,0': [{'type': 'light', 'message': 'hello light people'}]
+    }
     
     return play
   
 staticroutestack(app, ['js', 'css', 'img'], 'client')
 
 if __name__ == '__main__':
-  run(app, host="localhost", port='8080', debug=True)
+    run(app, host=('0.0.0.0' if os.environ.get('APP_LOCATION') == 'heroku' else "localhost"),
+        port=( (len(sys.argv) > 1 and sys.argv[1]) or '8080'), debug=True)

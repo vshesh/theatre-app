@@ -15,7 +15,6 @@ Vishesh
 * deploy server somewhere so this app works
 * Add logging (google analytics)
   * any change to the play information
-  *
 
 Rachel
 * Fix measure for measure script

@@ -67,7 +67,7 @@ function Word() {
     view: ({attrs: {state, actions, word, pos}}) =>
       m('span.word', {
           onclick: () => actions.line_notes.toggle(pos, !state.play.line_notes[pos]),
-          class: cx({'word-missed': state.play.line_notes[pos]})
+          class: cx({'word-missed': state.display.line_notes && state.play.line_notes[pos]})
         }, word)
   }
 }
@@ -112,7 +112,7 @@ const Script = {
       actions.active_line.update(pos);
     })},
       m('div.title', play.title, ' by ', play.author),
-      !!play && !_.equals(script, []) && script.map((act, a) =>
+      !!play && script.map((act, a) =>
         m('div.act', act.map((scene, sc) => scene.map((block, l) =>
           m(SpeakingBlock, {state: state, actions: actions, block: block, pos: [a, sc, l]}) )) ))
     )
@@ -224,7 +224,7 @@ const DisplayToggle = {
 const ModeSelector = {
   view: ({attrs: {display, actions}}) =>
     m('div.mode-selector',
-      m(DisplayToggle, {name: 'Stage', state: display.stage, ontoggle: actions.display.toggle_stage}),
+      m(DisplayToggle, {name: (display.stage ? 'Hide' : 'Show') + ' Stage', state: display.stage, ontoggle: actions.display.toggle_stage}),
       false && m(DisplayToggle, {name: 'Cues', state: display.cues, ontoggle: actions.display.toggle_cues}),
       m(DisplayToggle, {name: 'Line Notes', state: display.line_notes, ontoggle: actions.display.toggle_line_notes}),
       m(DisplayToggle, {name: 'Director Notes', state: display.dir_notes, ontoggle: actions.display.toggle_dir_notes}))

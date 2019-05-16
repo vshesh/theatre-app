@@ -4,7 +4,7 @@
 
 from bottle import request, response, abort, error, HTTPResponse
 
-import json
+import simplejson as json
 import toolz as t
 import sys
 
