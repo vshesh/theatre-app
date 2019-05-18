@@ -62,6 +62,37 @@ const CueModal = {
 }
 
 
+const NoteModal = {
+  view: ({attrs: {actions, onclose, notes, pos}}) => {
+    return m(Modal,
+      m('div.modal.cue-modal',
+        m('div.modal-header',
+          m('div.modal-header-left',
+          m('span.header', 'Notes')),
+          m('button.pure-button.close-button', {onclick: onclose}, 'X')),
+        m('div.notes', notes.map((note,i) =>
+          m('div.note',
+            m('span.cue-type',
+              'Note for ',
+              m('select', {value: note.type, onchange: (v) => actions.notes.update(pos, i, {type: v.target.value})},
+                m('option', {value: 'line'}, 'Line'),
+                m('option', {value: 'light'}, 'Lights'),
+                m('option', {value: 'sound'}, 'Sound'),
+                m('option', {value: 'props'}, 'Props'),
+                m('option', {value: 'set'}, 'Set'),
+                m('option', {value: 'all cast'}, 'All Cast')),
+            m('button.warning.pure-button', {onclick: () => actions.notes.remove(pos, i)}, 'Remove'),
+          ),
+          m('textarea.cue-message', {value: note.message, oninput: (e) => actions.notes.update(pos, i,  {message: e.target.value})}))),
+        m('div.add-note',
+          m('button.pure-button', {onclick: () => actions.notes.add(pos)}, '+Add another note'))
+      ),
+        m('div.modal-footer',
+          m('button.primary.pure-button', {onclick: onclose}, 'Done')  )))
+    }
+}
+
+
 function Word() {
   return {
     view: ({attrs: {state, actions, word, pos}}) =>
@@ -75,6 +106,7 @@ function Word() {
 
 function Line() {
   let lightModal = false;
+  let noteModal = false;
   return {
     view: ({attrs: {state, actions, line, pos}}) => {
     return m('span.line',
@@ -82,9 +114,13 @@ function Line() {
       state.display.line_notes && m('span.line-note', {class: cx({active: state.play.line_notes[pos]}), onclick: () => actions.line_notes.toggle(pos, !state.play.line_notes[pos])}),
       m('span.text', line.split(' ').map((w,i) => m(Word, {state, actions, word: w + ' ', pos: [...pos, i]}))),
       m('span.extras',
-        state.display.dir_notes && m('span.dir-note', ' '),
+        state.display.dir_notes && m('span.dir-note', {
+          class: cx({active: (x => !!x && x.length > 0)(state.play.director_notes[pos])}),
+          onclick: () => {if (!(x => !!x && x.length > 0)(state.play.director_notes[pos])) { actions.notes.add(pos) } noteModal = true;}
+        }, (x => !!x && x.length > 0)(state.play.director_notes[pos]) ? '!' : '+'),
+        noteModal && m(NoteModal, {actions: actions, onclose: () => {noteModal = false}, pos: pos, notes: state.play.director_notes[pos]}),
         false && state.display.cues && m('span.light-cue', {
-          class: cx({active: !!state.play.cues[pos]}),
+          class: cx({active: !!state.play.cues[pos] && state.play.cues[pos].length > 0}),
           onclick: () => {lightModal = !lightModal}
         }, state.play.cues[pos] ? state.play.cues[pos][0].name : null,
         lightModal && m(CueModal, {actions: actions, onclose: () => {lightModal = false}, cue: state.play.cues[pos][0]})),
@@ -92,6 +128,7 @@ function Line() {
     )}
   };
 }
+
 
 const SpeakingBlock = {
   view: ({attrs: {state, actions, block, pos}}) => {
@@ -120,6 +157,15 @@ const Script = {
 }
 
 
+function characterMap(line, blocking) {
+  return !line ? {} : _.omitBy(_.isUndefined, _.mapValues(_.flow([
+    _.toPairs,
+    _.map( ([k,v]) => [decodeArray(k), v]),
+    _.filter( ([k,v]) => posCompare(k, line) <= 0 && posCompare(k, [line[0], line[1], 0, 0]) >= 0),
+    maxCompare((x,y) => posCompare(x[0], y[0])),
+    _.last
+  ]), blocking));
+}
 function StageDiagram() {
   let active_line = null;
   let blocking = null;
@@ -127,15 +173,6 @@ function StageDiagram() {
   let dropzone = interact('.stage-diagram .img-container');
   let enterable = interact('.stage-diagram .benched-character');
   
-  function characterMap(line, blocking) {
-    return !line ? {} : _.omitBy(_.isUndefined, _.mapValues(_.flow([
-      _.toPairs,
-      _.map( ([k,v]) => [decodeArray(k), v]),
-      _.filter( ([k,v]) => posCompare(k, line) <= 0 && posCompare(k, [line[0], line[1], 0, 0]) >= 0),
-      maxCompare((x,y) => posCompare(x[0], y[0])),
-      _.last
-    ]), blocking));
-  }
   draggable.draggable({
       onend: function(e) {
         let rect = interact.getElementRect(e.target.parentNode);
@@ -234,7 +271,7 @@ const App = {
   view: ({attrs: {state, actions}}) =>
     m('div.app',
       m(ModeSelector, {display: state.display, actions}),
-      state.display.stage && m(StageDiagram, {characters: state.play ? state.play.characters : {}, line: state.active_line, blocking: state.blocking, actions}),
+      state.display.stage && m(StageDiagram, {characters: state.play ? state.play.characters : {}, line: state.active_line, blocking: state.play.blocking, actions}),
       m(Script, {state, actions}))
 }
 
@@ -259,6 +296,13 @@ const app = {
     receive_data: (play) => update({play: play}),
     line_notes: {
       toggle: (pos, v) => update({play: PS({line_notes: PS({[pos]: v})})})
+    },
+    notes: {
+      add: (pos) => update({play: PS({director_notes: PS({[pos]: S(a => [].concat(a ? a : [], [{type: 'line', message: ''}]))})})}),
+      remove: (pos, i) => update({play: PS({director_notes: PS({[pos]: S(a => [].concat(_.slice(0,i,a), a.slice(i+1)))})})}),
+      update: (pos, i, d) => {
+        console.log('notes update', pos, i, d);
+        return update({play: PS({director_notes: PS({[pos]:  S(a => {console.log(_.slice(0,i,a), a.slice(i+1)); return [].concat(_.slice(0,i,a), P(a[i], d), a.slice(i+1))} ) }) })}) }
     },
     display: {
       toggle_stage: () => update({display: PS({stage: S(v => !v)})}),

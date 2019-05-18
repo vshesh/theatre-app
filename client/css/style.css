@@ -100,10 +100,6 @@ button:focus {
   margin: 0 20px;
 }
 
-.line span.word-missed {
-  background-color: orange;
-}
-
 .line {
   display: flex;
   position: relative;}
@@ -138,7 +134,8 @@ button:focus {
       width: 0.75em;
       position: absolute;
       left: -12px;
-      transform: translate(-50%, 15%);
+      top: 45%;
+      transform: translate(-50%, -50%);
       cursor: pointer;
     }
     
@@ -157,8 +154,12 @@ button:focus {
     }
     
     .line .dir-note.active {
-      background-color: #E5C392;
+      background-color: #8dff80;
       color: black;
+    }
+
+    .line span.word-missed {
+      background-color: orange;
     }
 
 .title {
@@ -243,4 +244,18 @@ button.warning {
 
 button.primary {
   background-color: #ddffdd;
+}
+
+.note {
+    padding: 5px;
+    background-color: #eee;
+    border-radius: 5px;
+    margin-bottom: 10px;
+}
+
+.note select {
+    outline: none;
+    background: inherit;
+    padding: 0;
+    margin: 0;
 }

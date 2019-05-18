@@ -66,7 +66,7 @@ def get_script():
       '0,0,0,0': [{'type': 'light', 'name': '1', 'message': 'Lights on!'}]
     }
     play['director_notes'] = {
-      '0,0,0,0': [{'type': 'light', 'message': 'hello light people'}]
+      '0,0,0,0': [{'type': 'light', 'message': 'hello light people'}, {'type': 'line', 'message':'you missed this'}]
     }
     
     return play
