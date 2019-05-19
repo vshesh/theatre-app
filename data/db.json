@@ -14,30 +14,6 @@
       "ANGELO": {
         "name": "Angelo",
         "short_name": "A"
-      },
-      "B": {
-        "name": "B",
-        "short_name": "B"
-      },
-      "C": {
-        "name": "B",
-        "short_name": "B"
-      },
-      "D": {
-        "name": "B",
-        "short_name": "B"
-      },
-      "E": {
-        "name": "B",
-        "short_name": "B"
-      },
-      "F": {
-        "name": "B",
-        "short_name": "B"
-      },
-      "G": {
-        "name": "B",
-        "short_name": "B"
       }
     },
     "script": [
@@ -173,7 +149,9 @@
         ]
       ]
     ],
-    "blocking": {},
+    "blocking": {
+      "ANGELO": {}
+    },
     "cues": {
       "0,0,0,0": [
         {
@@ -187,12 +165,8 @@
     "director_notes": {
       "0,0,0,0": [
         {
-          "type": "light",
-          "message": "hello light people"
-        },
-        {
           "type": "line",
-          "message": "you missed this"
+          "message": ""
         }
       ]
     },

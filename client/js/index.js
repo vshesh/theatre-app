@@ -185,7 +185,7 @@ function StageDiagram() {
     ondrop: function(e) {
       console.log('benched!', e.relatedTarget.title);
       let dot = e.relatedTarget.title;
-      actions.blocking.update(dot, active_line, null);
+      actions.blocking.update(dot, active_line, !characterMap([...(active_line.slice(0,3)), active_line[3]-1], blocking)[e.relatedTarget.title] ? D : null);
       m.redraw();
     }
   })
@@ -224,9 +224,8 @@ function StageDiagram() {
           y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy;
     
         // translate the element
-        target.style.webkitTransform =
-        target.style.transform =
-          'translate(' + x + 'px, ' + y + 'px)';
+        target.style.left = `${x}px`;
+        target.style.top = `${y}px`;
     
         // update the posiion attributes
         target.setAttribute('data-x', x);
@@ -239,6 +238,9 @@ function StageDiagram() {
       }
     });
   return {
+    oncreate: (vnode) => {
+      vnode.dom.querySelector('.character-selector').setAttribute('style', `height: ${vnode.dom.querySelector('.diagram').clientHeight}px`)
+    },
     onupdate: (vnode) => {
       active_line = vnode.attrs.line;
       blocking = vnode.attrs.play ? vnode.attrs.play.blocking : {};
@@ -330,6 +332,10 @@ const App = {
     )
 }
 
+
+const e = (category, action, label, value) => ga('send', 'event', category, action, label, value))
+
+
 const app = {
   initial_state: {
     display: {
@@ -350,8 +356,8 @@ const app = {
   actions: (update) => ({
     receive_data: (play) => update({play: play}),
     line_notes: {
-      clear: () => update({play: PS({line_notes: {}})}),
-      toggle: (pos, v) => update({play: PS({line_notes: PS({[pos]: v})})})
+      clear: () => {e('line-notes', 'clear'); return update({play: PS({line_notes: {}})})},
+      toggle: (pos, v) =>{e('line-notes', 'toggle', pos, v); return update({play: PS({line_notes: PS({[pos]: v})})})}
     },
     notes: {
       add: (pos) => update({play: PS({director_notes: PS({[pos]: S(a => [].concat(a ? a : [], [{type: 'line', message: ''}]))})})}),

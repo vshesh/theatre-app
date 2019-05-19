@@ -52,30 +52,31 @@ def create_production(data):
 
 @app.get('/script')
 def get_script():
-  with open('data/measure.json') as f:
-    play = t.merge(skeleton, {'script': json.load(f)})
-    play['title'] = 'Measure for Measure'
-    play['id'] = '1'
-    play['author'] = 'William Shakespeare'
-    play['characters'] = {
-      'DUKE_VINCENTIO': {'name': 'Duke Vincentio', 'short_name': 'DV'},
-      'ESCALUS': {'name': 'Escalus', 'short_name': 'E'},
-      'ANGELO': {'name': 'Angelo', 'short_name': 'A'},
-      'B':{'name': 'B', 'short_name':'B'},
-      'C':{'name': 'B', 'short_name':'B'},
-      'D':{'name': 'B', 'short_name':'B'},
-      'E':{'name': 'B', 'short_name':'B'},
-      'F':{'name': 'B', 'short_name':'B'},
-      'G':{'name': 'B', 'short_name':'B'},
-    }
-    play['cues'] = {
-      '0,0,0,0': [{'type': 'light', 'name': '1', 'message': 'Lights on!'}]
-    }
-    play['director_notes'] = {
-      '0,0,0,0': [{'type': 'light', 'message': 'hello light people'}, {'type': 'line', 'message':'you missed this'}]
-    }
-    
-    return play
+  return db["1"]
+  # with open('data/measure.json') as f:
+  #   play = t.merge(skeleton, {'script': json.load(f)})
+  #   play['title'] = 'Measure for Measure'
+  #   play['id'] = '1'
+  #   play['author'] = 'William Shakespeare'
+  #   play['characters'] = {
+  #     'DUKE_VINCENTIO': {'name': 'Duke Vincentio', 'short_name': 'DV'},
+  #     'ESCALUS': {'name': 'Escalus', 'short_name': 'E'},
+  #     'ANGELO': {'name': 'Angelo', 'short_name': 'A'},
+  #     'B':{'name': 'B', 'short_name':'B'},
+  #     'C':{'name': 'B', 'short_name':'B'},
+  #     'D':{'name': 'B', 'short_name':'B'},
+  #     'E':{'name': 'B', 'short_name':'B'},
+  #     'F':{'name': 'B', 'short_name':'B'},
+  #     'G':{'name': 'B', 'short_name':'B'},
+  #   }
+  #   play['cues'] = {
+  #     '0,0,0,0': [{'type': 'light', 'name': '1', 'message': 'Lights on!'}]
+  #   }
+  #   play['director_notes'] = {
+  #     '0,0,0,0': [{'type': 'light', 'message': 'hello light people'}, {'type': 'line', 'message':'you missed this'}]
+  #   }
+  #
+  #   return play
   
 staticroutestack(app, ['js', 'css', 'img'], 'client')
 

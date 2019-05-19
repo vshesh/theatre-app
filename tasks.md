@@ -1,26 +1,14 @@
 Tasks
 =========
 
-
 Vishesh
 
-1) Line notes
-2) director notes
-3) Cues
-4) blocking
-
-* code modal dialogs for cues/director notes
 * labels for the different icons in the script
-* move character icons to right of stage rather than underneath.
-* deploy server somewhere so this app works
 * Add logging (google analytics)
   * any change to the play information
 
 Rachel
 * Fix measure for measure script
-* Ability to make an email (make a dialog with text you can copy/paste)
-* design cue/notes dialogs
-* design clear line notes button & the email dialog
 * Table of contents for script
   * Scroll to position in script
 

@@ -52,6 +52,9 @@ button:focus {
       border-radius: 50%;
       background: #ff000088;
       margin: 5px;
+      z-index: 10;
+      position: relative;
+      
       touch-action: none;
       -webkit-user-select: none;
       -moz-user-select: none;
@@ -85,6 +88,8 @@ button:focus {
     display: block;
     max-height: 400px;
     max-width: 400px;
+    z-index: 0;
+    position: relative;
   }
 
 .app {
@@ -133,6 +138,7 @@ button:focus {
     
     .line .extras .blocking-mark {
       background-color: red;
+      opacity: 0.5;
       position: relative;
       top: 0.1em;
       height: 0.8em;
@@ -198,14 +204,12 @@ button:focus {
 .modal-container {
   z-index: 100;
   position: fixed; /* Stay in place */
-  z-index: 1; /* Sit on top */
   left: 0;
   top: 0;
   width: 100%; /* Full width */
   height: 100%; /* Full height */
   margin: auto auto;
   overflow: auto; /* Enable scroll if needed */
-  background-color: rgb(0,0,0); /* Fallback color */
   background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
 }
 
