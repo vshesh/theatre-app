@@ -41,6 +41,7 @@ button:focus {
     flex-direction: column;}
 
     .stage-diagram .character-selector .benched-character {
+      text-align: center;
       padding: 5px;
       display: inline-block;
       border-radius: 50%;
@@ -55,6 +56,8 @@ button:focus {
     }
 
   .stage-diagram .character {
+    min-width: 1em;
+    text-align: center;
     background: #ff000088;
     padding: 5px;
     border-radius: 50%;
@@ -112,8 +115,7 @@ button:focus {
     text-align: right;}
 
     .line .extras > * {
-      font-style: normal;
-      font-family: monospace;
+      font-style: normal;;
       display: inline-block;}
   
     .line .extras > * {
@@ -124,6 +126,15 @@ button:focus {
       height: 1em;
       text-align: center;
       cursor: pointer;
+      vertical-align: text-top;
+    }
+    
+    .line .extras .blocking-mark {
+      background-color: red;
+      position: relative;
+      top: 0.1em;
+      height: 0.8em;
+      width: 0.8em;
     }
     
     .line .line-note {
@@ -197,7 +208,7 @@ button:focus {
 }
 
 .modal {
-  width: 50%;
+  max-width: 400px;
   background-color: white;
   margin: 0 auto;
   margin-top: 20px;
@@ -258,4 +269,22 @@ button.primary {
     background: inherit;
     padding: 0;
     margin: 0;
+}
+
+.buffer {
+  height: calc(100% - 3em);
+}
+
+.footer {
+  display: flex;
+}
+.footer button {
+  flex: 1;
+  margin: 1px;
+}
+
+
+.email-modal .character thead th {
+  text-align: left;
+  padding: 0 10px 0 0;
 }

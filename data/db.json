@@ -159,10 +159,7 @@
         }
       ]
     },
-    "line_notes": {
-      "0,0,0,0": false,
-      "0,0,1,0": false
-    },
+    "line_notes": {},
     "director_notes": {
       "0,0,0,0": [
         {
@@ -173,8 +170,7 @@
           "type": "line",
           "message": "you missed this"
         }
-      ],
-      "0,0,1,0": []
+      ]
     },
     "id": "1"
   }

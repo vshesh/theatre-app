@@ -68,12 +68,12 @@ const NoteModal = {
       m('div.modal.cue-modal',
         m('div.modal-header',
           m('div.modal-header-left',
-          m('span.header', 'Notes')),
+          m('span.header', 'Comments')),
           m('button.pure-button.close-button', {onclick: onclose}, 'X')),
         m('div.notes', notes.map((note,i) =>
           m('div.note',
             m('span.cue-type',
-              'Note for ',
+              'Comment for ',
               m('select', {value: note.type, onchange: (v) => actions.notes.update(pos, i, {type: v.target.value})},
                 m('option', {value: 'line'}, 'Line'),
                 m('option', {value: 'light'}, 'Lights'),
@@ -112,8 +112,9 @@ function Line() {
     return m('span.line',
       {'data-pos': pos, class: cx({active: state.display.stage && _.equals(state.active_line, pos)}) },
       state.display.line_notes && m('span.line-note', {class: cx({active: state.play.line_notes[pos]}), onclick: () => actions.line_notes.toggle(pos, !state.play.line_notes[pos])}),
-      m('span.text', line.split(' ').map((w,i) => m(Word, {state, actions, word: w + ' ', pos: [...pos, i]}))),
+      m('span.text', line /*.split(' ').map((w,i) => m(Word, {state, actions, word: w + ' ', pos: [...pos, i]}))*/ ),
       m('span.extras',
+        state.display.stage && (_.map(x => pos in x, _.values(state.play.blocking)).reduce((acc,x)=> acc||x, false)) && m('span.blocking-mark', '\u00a0'),
         state.display.dir_notes && m('span.dir-note', {
           class: cx({active: (x => !!x && x.length > 0)(state.play.director_notes[pos])}),
           onclick: () => {if (!(x => !!x && x.length > 0)(state.play.director_notes[pos])) { actions.notes.add(pos) } noteModal = true;}
@@ -151,7 +152,8 @@ const Script = {
       m('div.title', play.title, ' by ', play.author),
       !!play && script.map((act, a) =>
         m('div.act', act.map((scene, sc) => scene.map((block, l) =>
-          m(SpeakingBlock, {state: state, actions: actions, block: block, pos: [a, sc, l]}) )) ))
+          m(SpeakingBlock, {state: state, actions: actions, block: block, pos: [a, sc, l]}) )) )),
+      m('div.buffer')
     )
   }
 }
@@ -163,21 +165,35 @@ function characterMap(line, blocking) {
     _.map( ([k,v]) => [decodeArray(k), v]),
     _.filter( ([k,v]) => posCompare(k, line) <= 0 && posCompare(k, [line[0], line[1], 0, 0]) >= 0),
     maxCompare((x,y) => posCompare(x[0], y[0])),
-    _.last
+    _.last,
+    x => x === null ? undefined : x
   ]), blocking));
 }
+
+
 function StageDiagram() {
   let active_line = null;
   let blocking = null;
   let draggable = interact('.stage-diagram .character');
   let dropzone = interact('.stage-diagram .img-container');
   let enterable = interact('.stage-diagram .benched-character');
+  let benchzone = interact('.stage-diagram .character-selector');
+  
+  benchzone.dropzone({
+    accept: '.character',
+    overlap: 0.5,
+    ondrop: function(e) {
+      console.log('benched!', e.relatedTarget.title);
+      let dot = e.relatedTarget.title;
+      actions.blocking.update(dot, active_line, null);
+      m.redraw();
+    }
+  })
   
   draggable.draggable({
       onend: function(e) {
         let rect = interact.getElementRect(e.target.parentNode);
         let value = [(e.pageX - rect.left)/rect.width, (e.pageY - rect.top)/rect.height];
-        console.log('drag finished', active_line, e.target.title, value);
         actions.blocking.update(e.target.title, active_line, value);
       },
       onmove: function(e) {
@@ -185,14 +201,7 @@ function StageDiagram() {
         let value = [(e.pageX - rect.left)/rect.width, (e.pageY - rect.top)/rect.height];
         e.target.style.left  = `${100*value[0]}%`;
         e.target.style.top = `${100*value[1]}%`;
-      },
-      modifiers: [
-        interact.modifiers.restrict({
-          restriction: "parent",
-          endOnly: true,
-          elementRect: { top: 0, left: 0, bottom: 1, right: 1 }
-        }),
-      ]
+      }
     });
     dropzone.dropzone({
       accept: '.benched-character',
@@ -255,16 +264,59 @@ function StageDiagram() {
 
 const DisplayToggle = {
   view: ({attrs: {name, state, ontoggle}}) =>
-    m('button.pure-button', {onclick: ontoggle, class: cx({'active': state})}, name)
+    m('button.pure-button', {onclick: ontoggle, class: cx({'active': state})}, (state? 'Hide ' : 'Show ' )+ name)
 }
 
 const ModeSelector = {
   view: ({attrs: {display, actions}}) =>
     m('div.mode-selector',
-      m(DisplayToggle, {name: (display.stage ? 'Hide' : 'Show') + ' Stage', state: display.stage, ontoggle: actions.display.toggle_stage}),
+      m(DisplayToggle, {name: 'Stage', state: display.stage, ontoggle: actions.display.toggle_stage}),
       false && m(DisplayToggle, {name: 'Cues', state: display.cues, ontoggle: actions.display.toggle_cues}),
       m(DisplayToggle, {name: 'Line Notes', state: display.line_notes, ontoggle: actions.display.toggle_line_notes}),
-      m(DisplayToggle, {name: 'Director Notes', state: display.dir_notes, ontoggle: actions.display.toggle_dir_notes}))
+      m(DisplayToggle, {name: 'Comments', state: display.dir_notes, ontoggle: actions.display.toggle_dir_notes}))
+}
+
+const ConfirmClearModal = {
+  view: ({attrs: {state, actions, onclose}}) =>
+    m(Modal, m('div.confirm-clear-modal.modal',
+      'Are you sure that you want to clear all the line notes?',
+      m('div.button-bar',
+        m('button.pure-button', {onclick: onclose}, 'Cancel & Return'),
+        m('button.pure-button.warning', {onclick: () => {actions.line_notes.clear(); onclose()}}, 'Clear Line Notes'))))
+}
+
+const generateEmail = (script, comments) =>
+  _.flow([
+    _.pickBy(_.identity),
+    _.keys,
+    _.map(decodeArray),
+    _.map(x => [_.get(x.slice(0,3), script)[0], x[0]+1, x[1]+1, _.get([...(x.slice(0,3)), 1, x[3]], script), _.filter(x => x.type === 'line', _.get(x, comments)).join('\n')]),
+    _.groupBy(_.head),
+   _.mapValues(_.map(_.tail)),
+   _.mapValues(_.sortBy(_.slice(0,2))),
+   _.mapValues(_.map(v => m('tr.email-row', _.map(x => m('td', x), v))))
+  ]);
+
+const EmailModal = {
+  view: ({attrs: {state : {play, play: {script, director_notes, line_notes}}, actions, onclose}}) =>
+    m(Modal,
+      m('div.modal.email-modal',
+        _.toPairs(generateEmail(script, director_notes)(line_notes)).map(([k,v]) => m('div.character', m('div.name', play.characters[k].name), m('table', m('thead', m('tr', m('th', 'Act'), m('th', 'Scene'), m('th', 'Text'), m('th', 'Comments'))), v))),
+        m('button.pure-button', {onclick: onclose}, 'Close')
+      ))
+}
+
+function AppFooter() {
+  emailModal = false;
+  clearModal = false;
+  return {
+    view: ({attrs: {state, actions}}) =>
+      m('div.footer',
+        m('button.pure-button', {onclick: () => emailModal = true}, 'Generate Line Notes Email'),
+        m('button.pure-button', {onclick: () => clearModal = true}, 'Clear all line notes'),
+        clearModal && m(ConfirmClearModal, {state, actions, onclose: () => {clearModal = false}}),
+        emailModal && m(EmailModal, {state, actions, onclose: () => {emailModal = false}}))
+  }
 }
 
 const App = {
@@ -272,7 +324,9 @@ const App = {
     m('div.app',
       m(ModeSelector, {display: state.display, actions}),
       state.display.stage && m(StageDiagram, {characters: state.play ? state.play.characters : {}, line: state.active_line, blocking: state.play.blocking, actions}),
-      m(Script, {state, actions}))
+      m(Script, {state, actions}),
+      state.display.line_notes && m(AppFooter, {actions, state})
+    )
 }
 
 const app = {
@@ -295,6 +349,7 @@ const app = {
   actions: (update) => ({
     receive_data: (play) => update({play: play}),
     line_notes: {
+      clear: () => update({play: PS({line_notes: {}})}),
       toggle: (pos, v) => update({play: PS({line_notes: PS({[pos]: v})})})
     },
     notes: {
@@ -314,7 +369,7 @@ const app = {
       update: (pos) => update({active_line: pos})
     },
     blocking: {
-      update: (character, pos, value) => update({play: PS({blocking: PS({[character]: {[pos]: value} }) }) })
+      update: (character, pos, value) => update({play: PS({blocking: PS({[character]: PS({[pos]: value}) }) }) })
     }
   })
 }
