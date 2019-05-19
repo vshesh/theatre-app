@@ -162,15 +162,10 @@
       ]
     },
     "line_notes": {
-      "0,0,3,0": true
+      "0,0,0,0": false
     },
     "director_notes": {
-      "0,0,0,0": [
-        {
-          "type": "line",
-          "message": ""
-        }
-      ]
+      "0,0,0,0": []
     },
     "id": "1"
   }

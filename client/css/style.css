@@ -126,11 +126,9 @@ button:focus {
       display: inline-block;}
   
     .line .extras > * {
-      padding: 0.1em;
+      padding: 0 0.5em;
       margin: 0 1px;
       border-radius: 50%;
-      width: 1em;
-      height: 1em;
       text-align: center;
       cursor: pointer;
       vertical-align: text-top;
@@ -139,23 +137,18 @@ button:focus {
     .line .extras .blocking-mark {
       background-color: red;
       opacity: 0.5;
-      position: relative;
-      top: 0.1em;
-      height: 0.8em;
-      width: 0.8em;
     }
     
     .line .line-note {
       border: 1px solid #ddd;
       border-radius: 50%;
       background-color: #eee;
-      height: 0.75em;
-      width: 0.75em;
       position: absolute;
       left: -12px;
-      top: 45%;
+      top: 50%;
       transform: translate(-50%, -50%);
       cursor: pointer;
+      padding: 0.4em;
     }
     
     .line .line-note.active {
@@ -175,6 +168,7 @@ button:focus {
     .line .dir-note.active {
       background-color: #8dff80;
       color: black;
+      margin-right: 3px;
     }
 
     .line span.word-missed {
