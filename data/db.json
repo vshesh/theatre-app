@@ -161,7 +161,9 @@
         }
       ]
     },
-    "line_notes": {},
+    "line_notes": {
+      "0,0,3,0": true
+    },
     "director_notes": {
       "0,0,0,0": [
         {

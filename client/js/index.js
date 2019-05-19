@@ -350,7 +350,8 @@ const app = {
       characters: {},
       title: '',
       author: '',
-      line_notes: {}
+      line_notes: {},
+      blocking: {}
     }
   },
   actions: (update) => ({
@@ -360,23 +361,23 @@ const app = {
       toggle: (pos, v) =>{e('line-notes', 'toggle', pos.toString(), v ? 1 : 0); return update({play: PS({line_notes: PS({[pos]: v})})})}
     },
     notes: {
-      add: (pos) => update({play: PS({director_notes: PS({[pos]: S(a => [].concat(a ? a : [], [{type: 'line', message: ''}]))})})}),
-      remove: (pos, i) => update({play: PS({director_notes: PS({[pos]: S(a => [].concat(_.slice(0,i,a), a.slice(i+1)))})})}),
+      add: (pos) => {e('comments', 'add', pos.toString()); return update({play: PS({director_notes: PS({[pos]: S(a => [].concat(a ? a : [], [{type: 'line', message: ''}]))})})})},
+      remove: (pos, i) => {e('comments', 'remove', `${pos}`, i); return update({play: PS({director_notes: PS({[pos]: S(a => [].concat(_.slice(0,i,a), a.slice(i+1)))})})})},
       update: (pos, i, d) => {
-        console.log('notes update', pos, i, d);
+        e('comments', 'update', `${Object.keys(d)[0]} @ ${pos}`, i);
         return update({play: PS({director_notes: PS({[pos]:  S(a => {console.log(_.slice(0,i,a), a.slice(i+1)); return [].concat(_.slice(0,i,a), P(a[i], d), a.slice(i+1))} ) }) })}) }
     },
     display: {
-      toggle_stage: () => update({display: PS({stage: S(v => !v)})}),
-      toggle_cues: () => update({display: PS({cues: S(v => !v)})}),
-      toggle_line_notes: () => update({display: PS({line_notes: S(v => !v)})}),
-      toggle_dir_notes: () => update({display: PS({dir_notes: S(v => !v)})})
+      toggle_stage: () => {e('display', 'toggle', 'stage', !states().display.stage); return update({display: PS({stage: S(v => !v)})})},
+      toggle_cues: () => {e('display', 'toggle', 'cues', !states().display.stage); return update({display: PS({cues: S(v => !v)})})},
+      toggle_line_notes: () => {e('display', 'toggle', 'line-notes', !states().display.stage); return update({display: PS({line_notes: S(v => !v)})})},
+      toggle_dir_notes: () => {e('display', 'toggle', 'comments', !states().display.stage); return update({display: PS({dir_notes: S(v => !v)})})}
     },
     active_line: {
       update: (pos) => update({active_line: pos})
     },
     blocking: {
-      update: (character, pos, value) => update({play: PS({blocking: PS({[character]: PS({[pos]: value}) }) }) })
+      update: (character, pos, value) => {e('blocking', `update - ${character}`, `${pos}`, Math.trunc(value[0]*100)); return update({play: PS({blocking: PS({[character]: PS({[pos]: value}) }) }) })}
     }
   })
 }
