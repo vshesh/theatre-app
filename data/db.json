@@ -14,6 +14,30 @@
       "ANGELO": {
         "name": "Angelo",
         "short_name": "A"
+      },
+      "B": {
+        "name": "B",
+        "short_name": "B"
+      },
+      "C": {
+        "name": "B",
+        "short_name": "B"
+      },
+      "D": {
+        "name": "B",
+        "short_name": "B"
+      },
+      "E": {
+        "name": "B",
+        "short_name": "B"
+      },
+      "F": {
+        "name": "B",
+        "short_name": "B"
+      },
+      "G": {
+        "name": "B",
+        "short_name": "B"
       }
     },
     "script": [

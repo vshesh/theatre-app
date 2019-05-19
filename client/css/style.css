@@ -16,6 +16,7 @@ button:focus {
 }
 
 .mode-selector {
+  flex: 0 0 auto;
   display: flex;
   padding-top: 5px;
 }
@@ -31,13 +32,17 @@ button:focus {
 }
 
 .stage-diagram {
+  flex: 0 0 auto;
   display: flex;
   justify-content: center;
+  overflow-y: hidden;
 }
 
   .stage-diagram .character-selector {
-    padding: 10px;
+    box-sizing: border-box;
     display: flex;
+    overflow-y: scroll;
+    max-height: 400px;
     flex-direction: column;}
 
     .stage-diagram .character-selector .benched-character {
@@ -82,19 +87,16 @@ button:focus {
     max-width: 400px;
   }
 
-.diagram {
-  width: 100%;
-}
-
 .app {
   width: 90%;
   margin: 0 auto;
-  height: 100%;
+  height: 100vh;
   display: flex;
   flex-direction: column;
 }
 
 .script {
+  flex: 1;
   height: 100%;
   overflow-y: scroll;
 }
@@ -276,6 +278,7 @@ button.primary {
 }
 
 .footer {
+  flex: 0 0 auto;
   display: flex;
 }
 .footer button {

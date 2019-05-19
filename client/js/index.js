@@ -242,6 +242,7 @@ function StageDiagram() {
     onupdate: (vnode) => {
       active_line = vnode.attrs.line;
       blocking = vnode.attrs.play ? vnode.attrs.play.blocking : {};
+      vnode.dom.querySelector('.character-selector').setAttribute('style', `height: ${vnode.dom.querySelector('.diagram').clientHeight}px`)
     },
     onremove: () => {
       delete draggable;
