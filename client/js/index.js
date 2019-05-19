@@ -357,7 +357,7 @@ const app = {
     receive_data: (play) => update({play: play}),
     line_notes: {
       clear: () => {e('line-notes', 'clear'); return update({play: PS({line_notes: {}})})},
-      toggle: (pos, v) =>{e('line-notes', 'toggle', pos, v); return update({play: PS({line_notes: PS({[pos]: v})})})}
+      toggle: (pos, v) =>{e('line-notes', 'toggle', pos.toString(), v ? 1 : 0); return update({play: PS({line_notes: PS({[pos]: v})})})}
     },
     notes: {
       add: (pos) => update({play: PS({director_notes: PS({[pos]: S(a => [].concat(a ? a : [], [{type: 'line', message: ''}]))})})}),
