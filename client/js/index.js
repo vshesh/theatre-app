@@ -333,7 +333,7 @@ const App = {
 }
 
 
-const e = (category, action, label, value) => ga('send', 'event', category, action, label, value))
+const e = (category, action, label, value) => ga('send', 'event', category, action, label, value)
 
 
 const app = {
