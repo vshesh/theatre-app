@@ -284,8 +284,10 @@ button.primary {
   margin: 1px;
 }
 
-
-.email-modal .character thead th {
+.modal.email-modal {
+  max-width: 600px;
+}
+.email-modal .character thead th, .email-row td {
   text-align: left;
   padding: 0 10px 0 0;
 }

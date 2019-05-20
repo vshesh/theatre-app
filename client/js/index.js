@@ -293,10 +293,16 @@ const generateEmail = (script, comments) =>
     _.pickBy(_.identity),
     _.keys,
     _.map(decodeArray),
-    _.map(x => [_.get(x.slice(0,3), script)[0], x[0]+1, x[1]+1, _.get([...(x.slice(0,3)), 1, x[3]], script), _.filter(x => x.type === 'line', _.get(x, comments)).join('\n')]),
+    _.map(x => [
+      _.get(x.slice(0,3), script)[0],
+      x[0]+1,
+      x[1]+1,
+      _.get([...(x.slice(0,3)), 1, x[3]], script),
+      _.pluck('message', _.filter(x => x.type === 'line', _.get(`${x}`, comments))).join('\n')
+    ]),
     _.groupBy(_.head),
-   _.mapValues(_.map(_.tail)),
-   _.mapValues(_.sortBy(_.slice(0,2))),
+    _.mapValues(_.map(_.tail)),
+    _.mapValues(_.sortBy(_.slice(0,2))),
    _.mapValues(_.map(v => m('tr.email-row', _.map(x => m('td', x), v))))
   ]);
 
@@ -304,7 +310,12 @@ const EmailModal = {
   view: ({attrs: {state : {play, play: {script, director_notes, line_notes}}, actions, onclose}}) =>
     m(Modal,
       m('div.modal.email-modal',
-        _.toPairs(generateEmail(script, director_notes)(line_notes)).map(([k,v]) => m('div.character', m('div.name', play.characters[k] ? play.characters[k].name : 'Stage Directions'), m('table', m('thead', m('tr', m('th', 'Act'), m('th', 'Scene'), m('th', 'Text'), m('th', 'Comments'))), v))),
+        'You can see your missed lines in context here: ',
+        m('a', {href: 'https://theatrem.herokuapp.com'}, 'https://theatrem.herokuapp.com'),
+        _.toPairs(generateEmail(script, director_notes)(line_notes)).map(([k,v]) =>
+          m('div.character',
+            m('div.name', play.characters[k] ? play.characters[k].name : 'Stage Directions'),
+            m('table', m('thead', m('tr', m('th', 'Act'), m('th', 'Scene'), m('th', 'Text'), m('th', 'Comments'))), v))),
         m('button.pure-button', {onclick: onclose}, 'Close')
       ))
 }

@@ -6575,8 +6575,15 @@
     "blocking": {},
     "cues": {},
     "line_notes": {
+      "0,0,0,0": true
     },
     "director_notes": {
+      "0,0,0,0": [
+        {
+          "type": "line",
+          "message": "some line note"
+        }
+      ]
     },
     "id": "1"
   }
