@@ -1,2 +1,172 @@
 {
+  "1": {
+    "title": "Measure for Measure",
+    "author": "William Shakespeare",
+    "characters": {
+      "DUKE_VINCENTIO": {
+        "name": "Duke Vincentio",
+        "short_name": "DV"
+      },
+      "ESCALUS": {
+        "name": "Escalus",
+        "short_name": "E"
+      },
+      "ANGELO": {
+        "name": "Angelo",
+        "short_name": "A"
+      }
+    },
+    "script": [
+      [
+        [
+          [
+            " [Enter DUKE_VINCENTIO, ESCALUS]"
+          ],
+          [
+            "DUKE_VINCENTIO",
+            [
+              "Escalus. \n"
+            ]
+          ],
+          [
+            "ESCALUS",
+            [
+              "My lord.\n"
+            ]
+          ],
+          [
+            "DUKE_VINCENTIO",
+            [
+              "The nature of our people,\n",
+              "Our city\u2019s institutions, and the terms\n",
+              "For common justice, you\u2019re as pregnant in\n",
+              "As art and practise hath enriched any \n",
+              "That we remember. Then no more remains,\n",
+              "But this: to your sufficiency, as your Worth is able,\n",
+              "And let them work. We have with special soul\n",
+              "Elected him our absence to supply,\n",
+              "And given his deputation all the organs \n",
+              "Of our own power: what think you of it?\n"
+            ]
+          ],
+          [
+            "ESCALUS",
+            [
+              "If any in Vienna be of worth \n",
+              "To undergo such ample grace and honour,\n",
+              "It is Lord Angelo.\n"
+            ]
+          ],
+          [
+            " [Enter ANGELO]"
+          ],
+          [
+            "DUKE_VINCENTIO",
+            [
+              " \u00a0\u00a0\u00a0\u00a0\u00a0\u00a0Look where he comes.\n"
+            ]
+          ],
+          [
+            "ANGELO",
+            [
+              "Always obedient to your grace\u2019s will,\n",
+              "I come to know your pleasure. \n"
+            ]
+          ],
+          [
+            "DUKE_VINCENTIO",
+            [
+              " \u00a0Angelo,\n",
+              "There is a kind of character in thy life,\n",
+              "That to the observer doth thy history\n",
+              "Fully unfold. Hold therefore, Angelo.\n",
+              "In our remove, be thou at full ourself.\n",
+              "Mortality and mercy in Vienna \n",
+              "Live in thy tongue, and heart. Old Escalus,\n",
+              "Though first in question, is thy secondary.\n",
+              "Take thy commission.\n"
+            ]
+          ],
+          [
+            "ANGELO",
+            [
+              "\t\t\t Now, good my lord,\n",
+              "Let there be some more test made of my metal,\n",
+              "Before so noble and so great a figure\n",
+              "Be stamp\u2019d upon it. \n"
+            ]
+          ],
+          [
+            "DUKE_VINCENTIO",
+            [
+              "\t\t \u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0No more evasion.\n",
+              "We have with a leaven\u2019d and prepared choice\n",
+              "Proceeded to you; therefore take your honours.\n",
+              "To th\u2019hopeful execution do I leave you\n",
+              "Of your commission. \n"
+            ]
+          ],
+          [
+            "ANGELO",
+            [
+              "\t\t\tYet give leave, my lord. \n",
+              "That we may bring you something on the way. \n"
+            ]
+          ],
+          [
+            "DUKE_VINCENTIO",
+            [
+              "My haste may not admit it; Your scope is\n",
+              "Free to enforce or qualify the laws\n",
+              "As to your soul seems good. Give me your hand;\n",
+              "I\u2019ll privily away. I love the people, \n",
+              "But do not like to stage me to their eyes:\n",
+              "Though it do well, I do not relish well\n",
+              "Their loud applause. Once more then, fare you well.\n"
+            ]
+          ],
+          [
+            " [Exit DUKE_VINCENTIO]"
+          ],
+          [
+            "ANGELO",
+            [
+              "The heavens give safety to your purposes!\n"
+            ]
+          ],
+          [
+            "ESCALUS",
+            [
+              "Lead forth and bring you back in happiness!\n",
+              "I shall desire, sir, to have free speech with you.\n",
+              "A power I have, but of what strength and nature\n",
+              "I am not yet instructed.\n"
+            ]
+          ],
+          [
+            " [Exeunt.]"
+          ]
+        ]
+      ]
+    ],
+    "blocking": {
+      "ANGELO": {}
+    },
+    "cues": {
+      "0,0,0,0": [
+        {
+          "type": "light",
+          "name": "1",
+          "message": "Lights on!"
+        }
+      ]
+    },
+    "line_notes": {
+      "0,0,0,0": false
+    },
+    "director_notes": {
+      "0,0,0,0": []
+    },
+    "id": "1"
+  }
 }

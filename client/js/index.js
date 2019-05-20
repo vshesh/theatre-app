@@ -20,7 +20,7 @@ const Modal = function() {
       // Append a modal container to the end of body
       dom = document.createElement('div')
       // The modal class has a fade-in animation
-      dom.className = 'modal'
+      dom.className = 'modal-container'
       document.body.appendChild(dom)
       // Mount a separate VDOM tree here
       m.mount(dom, ModalContainer)
@@ -30,7 +30,7 @@ const Modal = function() {
     },
     onbeforeremove() {
       // Add a class with fade-out exit animation
-      dom.classList.add('hide')
+      dom.classList.add('hide');
       return new Promise(r => {
         dom.addEventListener('animationend', r)
       })
@@ -46,37 +46,90 @@ const Modal = function() {
 }
 
 
+const CueModal = {
+  view: ({attrs: {actions, onclose, cue}}) =>
+    m(Modal,
+      m('div.modal.cue-modal',
+        m('div.modal-header',
+          m('div.modal-header-left',
+          m('span.cue-type', cue.type, ' ', 'cue'),
+          m('input.cue-name', {type: 'field', value:  cue.name})),
+          m('button.pure-button.close-button', {onclick: onclose}, 'X')),
+        m('textarea.cue-message', {value: cue.message}),
+        m('div.modal-footer',
+          m('button.warning.pure-button', 'Delete'),
+          m('button.primary.pure-button', 'Save'))))
+}
+
+
+const NoteModal = {
+  view: ({attrs: {actions, onclose, notes, pos}}) => {
+    return m(Modal,
+      m('div.modal.cue-modal',
+        m('div.modal-header',
+          m('div.modal-header-left',
+          m('span.header', 'Comments')),
+          m('button.pure-button.close-button', {onclick: onclose}, 'X')),
+        m('div.notes', notes.map((note,i) =>
+          m('div.note',
+            m('span.cue-type',
+              'Comment for ',
+              m('select', {value: note.type, onchange: (v) => actions.notes.update(pos, i, {type: v.target.value})},
+                m('option', {value: 'line'}, 'Line'),
+                m('option', {value: 'light'}, 'Lights'),
+                m('option', {value: 'sound'}, 'Sound'),
+                m('option', {value: 'props'}, 'Props'),
+                m('option', {value: 'set'}, 'Set'),
+                m('option', {value: 'all cast'}, 'All Cast')),
+            m('button.warning.pure-button', {onclick: () => actions.notes.remove(pos, i)}, 'Remove'),
+          ),
+          m('textarea.cue-message', {value: note.message, oninput: (e) => actions.notes.update(pos, i,  {message: e.target.value})}))),
+        m('div.add-note',
+          m('button.pure-button', {onclick: () => actions.notes.add(pos)}, '+Add another note'))
+      ),
+        m('div.modal-footer',
+          m('button.primary.pure-button', {onclick: onclose}, 'Done')  )))
+    }
+}
+
+
 function Word() {
   return {
-    view: ({attrs: {word, onclick}}) =>
-      m('span.word', word)
+    view: ({attrs: {state, actions, word, pos}}) =>
+      m('span.word', {
+          onclick: () => actions.line_notes.toggle(pos, !state.play.line_notes[pos]),
+          class: cx({'word-missed': state.display.line_notes && state.play.line_notes[pos]})
+        }, word)
   }
 }
 
-const CueModal = {
-  view: ({attrs: {onclose}}) =>
-    m(Modal, m('button', {onclick: onclose}, 'done'))
-}
 
 function Line() {
-  let cueOpen, lightOpen, dirNoteOpen = false;
+  let lightModal = false;
+  let noteModal = false;
   return {
-    view: ({attrs: {state, actions, line, pos}}) =>
-    m('span.line',
+    view: ({attrs: {state, actions, line, pos}}) => {
+    return m('span.line',
       {'data-pos': pos, class: cx({active: state.display.stage && _.equals(state.active_line, pos)}) },
       state.display.line_notes && m('span.line-note', {class: cx({active: state.play.line_notes[pos]}), onclick: () => actions.line_notes.toggle(pos, !state.play.line_notes[pos])}),
-      m('span.text', line),
+      m('span.text', line /*.split(' ').map((w,i) => m(Word, {state, actions, word: w + ' ', pos: [...pos, i]}))*/ ),
       m('span.extras',
-        state.display.dir_notes && m('span.dir-note', ' '),
-        state.display.cues && m('span.light-cue', {
-          class: cx({active: !!state.play.cues[pos]}),
-          onclick: () => {lightOpen = !lightOpen}
+        state.display.stage && (_.map(x => pos in x, _.values(state.play.blocking)).reduce((acc,x)=> acc||x, false)) && m('span.blocking-mark', '\u00a0'),
+        state.display.dir_notes && m('span.dir-note', {
+          class: cx({active: (x => !!x && x.length > 0)(state.play.director_notes[pos])}),
+          onclick: () => {if (!(x => !!x && x.length > 0)(state.play.director_notes[pos])) { actions.notes.add(pos) } noteModal = true;}
+        }, (x => !!x && x.length > 0)(state.play.director_notes[pos]) ? '!' : '+'),
+        noteModal && m(NoteModal, {actions: actions, onclose: () => {noteModal = false}, pos: pos, notes: state.play.director_notes[pos]}),
+        false && state.display.cues && m('span.light-cue', {
+          class: cx({active: !!state.play.cues[pos] && state.play.cues[pos].length > 0}),
+          onclick: () => {lightModal = !lightModal}
         }, state.play.cues[pos] ? state.play.cues[pos][0].name : null,
-        cueOpen && m(CueModal, {onclose: () => {cueOpen = false;}})),
-        state.display.cues && m('span.sound-cue', ' '))
-    )
+        lightModal && m(CueModal, {actions: actions, onclose: () => {lightModal = false}, cue: state.play.cues[pos][0]})),
+        false && state.display.cues && m('span.sound-cue', ' '))
+    )}
   };
 }
+
 
 const SpeakingBlock = {
   view: ({attrs: {state, actions, block, pos}}) => {
@@ -97,11 +150,24 @@ const Script = {
       actions.active_line.update(pos);
     })},
       m('div.title', play.title, ' by ', play.author),
-      !!play && !_.equals(script, []) && script.map((act, a) =>
+      !!play && script.map((act, a) =>
         m('div.act', act.map((scene, sc) => scene.map((block, l) =>
-          m(SpeakingBlock, {state: state, actions: actions, block: block, pos: [a, sc, l]}) )) ))
+          m(SpeakingBlock, {state: state, actions: actions, block: block, pos: [a, sc, l]}) )) )),
+      m('div.buffer')
     )
   }
+}
+
+
+function characterMap(line, blocking) {
+  return !line ? {} : _.omitBy(_.isUndefined, _.mapValues(_.flow([
+    _.toPairs,
+    _.map( ([k,v]) => [decodeArray(k), v]),
+    _.filter( ([k,v]) => posCompare(k, line) <= 0 && posCompare(k, [line[0], line[1], 0, 0]) >= 0),
+    maxCompare((x,y) => posCompare(x[0], y[0])),
+    _.last,
+    x => x === null ? undefined : x
+  ]), blocking));
 }
 
 
@@ -111,21 +177,23 @@ function StageDiagram() {
   let draggable = interact('.stage-diagram .character');
   let dropzone = interact('.stage-diagram .img-container');
   let enterable = interact('.stage-diagram .benched-character');
+  let benchzone = interact('.stage-diagram .character-selector');
   
-  function characterMap(line, blocking) {
-    return !line ? {} : _.omitBy(_.isUndefined, _.mapValues(_.flow([
-      _.toPairs,
-      _.map( ([k,v]) => [decodeArray(k), v]),
-      _.filter( ([k,v]) => posCompare(k, line) <= 0 && posCompare(k, [line[0], line[1], 0, 0]) >= 0),
-      maxCompare((x,y) => posCompare(x[0], y[0])),
-      _.last
-    ]), blocking));
-  }
+  benchzone.dropzone({
+    accept: '.character',
+    overlap: 0.5,
+    ondrop: function(e) {
+      console.log('benched!', e.relatedTarget.title);
+      let dot = e.relatedTarget.title;
+      actions.blocking.update(dot, active_line, !characterMap([...(active_line.slice(0,3)), active_line[3]-1], blocking)[e.relatedTarget.title] ? D : null);
+      m.redraw();
+    }
+  })
+  
   draggable.draggable({
       onend: function(e) {
         let rect = interact.getElementRect(e.target.parentNode);
         let value = [(e.pageX - rect.left)/rect.width, (e.pageY - rect.top)/rect.height];
-        console.log('drag finished', active_line, e.target.title, value);
         actions.blocking.update(e.target.title, active_line, value);
       },
       onmove: function(e) {
@@ -133,14 +201,7 @@ function StageDiagram() {
         let value = [(e.pageX - rect.left)/rect.width, (e.pageY - rect.top)/rect.height];
         e.target.style.left  = `${100*value[0]}%`;
         e.target.style.top = `${100*value[1]}%`;
-      },
-      modifiers: [
-        interact.modifiers.restrict({
-          restriction: "parent",
-          endOnly: true,
-          elementRect: { top: 0, left: 0, bottom: 1, right: 1 }
-        }),
-      ]
+      }
     });
     dropzone.dropzone({
       accept: '.benched-character',
@@ -163,23 +224,27 @@ function StageDiagram() {
           y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy;
     
         // translate the element
-        target.style.webkitTransform =
-        target.style.transform =
-          'translate(' + x + 'px, ' + y + 'px)';
+        target.style.left = `${x}px`;
+        target.style.top = `${y}px`;
     
         // update the posiion attributes
         target.setAttribute('data-x', x);
         target.setAttribute('data-y', y);
       },
       onend: function(event) {
-        _.delay(50, () => event.target.style.webkitTransform = event.target.style.transform = "");
+        event.target.setAttribute('data-x', 0);
+        event.target.setAttribute('data-y', 0);
+        _.delay(100, () => event.target.style.webkitTransform = event.target.style.transform = "");
       }
     });
   return {
+    oncreate: (vnode) => {
+      vnode.dom.querySelector('.character-selector').setAttribute('style', `height: ${vnode.dom.querySelector('.diagram').clientHeight}px`)
+    },
     onupdate: (vnode) => {
       active_line = vnode.attrs.line;
       blocking = vnode.attrs.play ? vnode.attrs.play.blocking : {};
-      console.log('position tracking', active_line, blocking);
+      vnode.dom.querySelector('.character-selector').setAttribute('style', `height: ${vnode.dom.querySelector('.diagram').clientHeight}px`)
     },
     onremove: () => {
       delete draggable;
@@ -202,27 +267,74 @@ function StageDiagram() {
 
 const DisplayToggle = {
   view: ({attrs: {name, state, ontoggle}}) =>
-    m('button', {onclick: ontoggle, class: cx({'active': state})}, name)
+    m('button.pure-button', {onclick: ontoggle, class: cx({'active': state})}, (state? 'Hide ' : 'Show ' )+ name)
 }
 
 const ModeSelector = {
   view: ({attrs: {display, actions}}) =>
     m('div.mode-selector',
       m(DisplayToggle, {name: 'Stage', state: display.stage, ontoggle: actions.display.toggle_stage}),
-      m(DisplayToggle, {name: 'Cues', state: display.cues, ontoggle: actions.display.toggle_cues}),
+      false && m(DisplayToggle, {name: 'Cues', state: display.cues, ontoggle: actions.display.toggle_cues}),
       m(DisplayToggle, {name: 'Line Notes', state: display.line_notes, ontoggle: actions.display.toggle_line_notes}),
-      m(DisplayToggle, {name: 'Dir Notes', state: display.dir_notes, ontoggle: actions.display.toggle_dir_notes}))
+      m(DisplayToggle, {name: 'Comments', state: display.dir_notes, ontoggle: actions.display.toggle_dir_notes}))
+}
+
+const ConfirmClearModal = {
+  view: ({attrs: {state, actions, onclose}}) =>
+    m(Modal, m('div.confirm-clear-modal.modal',
+      'Are you sure that you want to clear all the line notes?',
+      m('div.button-bar',
+        m('button.pure-button', {onclick: onclose}, 'Cancel & Return'),
+        m('button.pure-button.warning', {onclick: () => {actions.line_notes.clear(); onclose()}}, 'Clear Line Notes'))))
+}
+
+const generateEmail = (script, comments) =>
+  _.flow([
+    _.pickBy(_.identity),
+    _.keys,
+    _.map(decodeArray),
+    _.map(x => [_.get(x.slice(0,3), script)[0], x[0]+1, x[1]+1, _.get([...(x.slice(0,3)), 1, x[3]], script), _.filter(x => x.type === 'line', _.get(x, comments)).join('\n')]),
+    _.groupBy(_.head),
+   _.mapValues(_.map(_.tail)),
+   _.mapValues(_.sortBy(_.slice(0,2))),
+   _.mapValues(_.map(v => m('tr.email-row', _.map(x => m('td', x), v))))
+  ]);
+
+const EmailModal = {
+  view: ({attrs: {state : {play, play: {script, director_notes, line_notes}}, actions, onclose}}) =>
+    m(Modal,
+      m('div.modal.email-modal',
+        _.toPairs(generateEmail(script, director_notes)(line_notes)).map(([k,v]) => m('div.character', m('div.name', play.characters[k].name), m('table', m('thead', m('tr', m('th', 'Act'), m('th', 'Scene'), m('th', 'Text'), m('th', 'Comments'))), v))),
+        m('button.pure-button', {onclick: onclose}, 'Close')
+      ))
+}
+
+function AppFooter() {
+  emailModal = false;
+  clearModal = false;
+  return {
+    view: ({attrs: {state, actions}}) =>
+      m('div.footer',
+        m('button.pure-button', {onclick: () => emailModal = true}, 'Generate Line Notes Email'),
+        m('button.pure-button', {onclick: () => clearModal = true}, 'Clear all line notes'),
+        clearModal && m(ConfirmClearModal, {state, actions, onclose: () => {clearModal = false}}),
+        emailModal && m(EmailModal, {state, actions, onclose: () => {emailModal = false}}))
+  }
 }
 
 const App = {
   view: ({attrs: {state, actions}}) =>
     m('div.app',
       m(ModeSelector, {display: state.display, actions}),
-      state.display.stage && m(StageDiagram, {characters: state.play ? state.play.characters : {}, line: state.active_line, blocking: state.blocking, actions}),
-      m(Script, {state, actions}))
+      state.display.stage && m(StageDiagram, {characters: state.play ? state.play.characters : {}, line: state.active_line, blocking: state.play.blocking, actions}),
+      m(Script, {state, actions}),
+      state.display.line_notes && m(AppFooter, {actions, state})
+    )
 }
 
-const SS = (f) => S(x => {f(x); return x;})
+
+const e = (category, action, label, value) => ga('send', 'event', category, action, label, value)
+
 
 const app = {
   initial_state: {
@@ -238,33 +350,58 @@ const app = {
       characters: {},
       title: '',
       author: '',
-      line_notes: {}
-    },
-    blocking: {}
+      line_notes: {},
+      blocking: {}
+    }
   },
   actions: (update) => ({
     receive_data: (play) => update({play: play}),
     line_notes: {
-      toggle: (pos, v) => update({play: PS({line_notes: PS({[pos]: v})})})
+      clear: () => {e('line-notes', 'clear'); return update({play: PS({line_notes: {}})})},
+      toggle: (pos, v) =>{e('line-notes', 'toggle', pos.toString(), v ? 1 : 0); return update({play: PS({line_notes: PS({[pos]: v})})})}
+    },
+    notes: {
+      add: (pos) => {e('comments', 'add', pos.toString()); return update({play: PS({director_notes: PS({[pos]: S(a => [].concat(a ? a : [], [{type: 'line', message: ''}]))})})})},
+      remove: (pos, i) => {e('comments', 'remove', `${pos}`, i); return update({play: PS({director_notes: PS({[pos]: S(a => [].concat(_.slice(0,i,a), a.slice(i+1)))})})})},
+      update: (pos, i, d) => {
+        e('comments', 'update', `${Object.keys(d)[0]} @ ${pos}`, i);
+        return update({play: PS({director_notes: PS({[pos]:  S(a => {console.log(_.slice(0,i,a), a.slice(i+1)); return [].concat(_.slice(0,i,a), P(a[i], d), a.slice(i+1))} ) }) })}) }
     },
     display: {
-      toggle_stage: () => update({display: PS({stage: S(v => !v)})}),
-      toggle_cues: () => update({display: PS({cues: S(v => !v)})}),
-      toggle_line_notes: () => update({display: PS({line_notes: S(v => !v)})}),
-      toggle_dir_notes: () => update({display: PS({dir_notes: S(v => !v)})})
+      toggle_stage: () => {e('display', 'toggle', 'stage', !states().display.stage); return update({display: PS({stage: S(v => !v)})})},
+      toggle_cues: () => {e('display', 'toggle', 'cues', !states().display.stage); return update({display: PS({cues: S(v => !v)})})},
+      toggle_line_notes: () => {e('display', 'toggle', 'line-notes', !states().display.stage); return update({display: PS({line_notes: S(v => !v)})})},
+      toggle_dir_notes: () => {e('display', 'toggle', 'comments', !states().display.stage); return update({display: PS({dir_notes: S(v => !v)})})}
     },
     active_line: {
       update: (pos) => update({active_line: pos})
     },
     blocking: {
-      update: (character, pos, value) => update({blocking: PS({[character]: {[pos]: value} }) })
+      update: (character, pos, value) => {e('blocking', `update - ${character}`, `${pos}`, Math.trunc(value[0]*100)); return update({play: PS({blocking: PS({[character]: PS({[pos]: value}) }) }) })}
     }
   })
 }
 
-var update = m.stream();
-var states = m.stream.scan(P, app.initial_state, update);
-var actions = app.actions(update);
+let update = m.stream();
+let states = m.stream.scan(P, app.initial_state, update);
+let actions = app.actions(update);
+
+function unique(s) {
+  let previous = null;
+  return s.map(v => {
+    if (previous !== null && _.isEqual(v, previous)) return m.stream.SKIP;
+    previous = _.cloneDeep(v);
+    return v;
+  });
+}
+
+unique(states.map(s => s.play)).map(p =>
+  p.id && m.request({
+    method: 'PUT',
+    url: `/production/${p.id}`,
+    data: {data: p}
+  })
+);
 
 m.request({method: 'GET', url: '/script'}).then((data) => actions.receive_data(data))
 

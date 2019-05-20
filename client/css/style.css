@@ -1,6 +1,7 @@
 html, body {
   margin: 0;
   padding: 0;
+  font-size: 14px;
 }
 
 html,body,#container {
@@ -15,18 +16,14 @@ button:focus {
 }
 
 .mode-selector {
+  flex: 0 0 auto;
   display: flex;
   padding-top: 5px;
 }
 
 .mode-selector button {
   flex: 1;
-  padding: 0.5em;
-  border-radius: 2%;
-  border: none;
   margin: 0 2.5px;
-  background: #eee;
-  color: black;
 }
 
 .mode-selector button.active {
@@ -34,67 +31,77 @@ button:focus {
   color: white;
 }
 
-.stage-diagram .character-selector {
-  padding: 10px;
-}
-
-.stage-diagram .character-selector .benched-character {
-  padding: 5px;
-  display: inline-block;
-  border-radius: 50%;
-  background: #ff000088;
-  margin: 5px;
-  touch-action: none;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  -o-user-select: none;
-  user-select: none;
-}
-
 .stage-diagram {
-  text-align: center;
+  flex: 0 0 auto;
+  display: flex;
+  justify-content: center;
+  overflow-y: hidden;
 }
 
-.stage-diagram .character {
-  background: red;
-  color: white;
-  padding: 5px;
-  border-radius: 50%;
-  position: absolute;
-  transform: translate(-50%, -50%);
-  touch-action: none;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  -o-user-select: none;
-  user-select: none;
-}
+  .stage-diagram .character-selector {
+    box-sizing: border-box;
+    display: flex;
+    overflow-y: scroll;
+    max-height: 400px;
+    flex-direction: column;}
 
-.stage-diagram .img-container {
-  position: relative;
-  display: inline-block;
-}
+    .stage-diagram .character-selector .benched-character {
+      text-align: center;
+      padding: 5px;
+      display: inline-block;
+      border-radius: 50%;
+      background: #ff000088;
+      margin: 5px;
+      z-index: 10;
+      position: relative;
+      
+      touch-action: none;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      -o-user-select: none;
+      user-select: none;
+    }
 
-.stage-diagram img {
-  display: block;
-  max-height: 400px;
-  max-width: 400px;
-}
+  .stage-diagram .character {
+    min-width: 1em;
+    text-align: center;
+    background: #ff000088;
+    padding: 5px;
+    border-radius: 50%;
+    position: absolute;
+    transform: translate(-50%, -50%);
+    touch-action: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    -o-user-select: none;
+    user-select: none;
+  }
 
-.diagram {
-  width: 100%;
-}
+  .stage-diagram .img-container {
+    position: relative;
+    display: inline-block;
+  }
+
+  .stage-diagram img {
+    display: block;
+    max-height: 400px;
+    max-width: 400px;
+    z-index: 0;
+    position: relative;
+  }
 
 .app {
   width: 90%;
   margin: 0 auto;
-  height: 100%;
+  height: 100vh;
   display: flex;
   flex-direction: column;
 }
 
 .script {
+  flex: 1;
   height: 100%;
   overflow-y: scroll;
 }
@@ -115,30 +122,33 @@ button:focus {
     text-align: right;}
 
     .line .extras > * {
-      font-style: normal;
-      font-family: monospace;
+      font-style: normal;;
       display: inline-block;}
   
     .line .extras > * {
-      padding: 0.1em;
+      padding: 0 0.5em;
       margin: 0 1px;
       border-radius: 50%;
-      width: 1em;
-      height: 1em;
       text-align: center;
       cursor: pointer;
+      vertical-align: text-top;
+    }
+    
+    .line .extras .blocking-mark {
+      background-color: red;
+      opacity: 0.5;
     }
     
     .line .line-note {
       border: 1px solid #ddd;
       border-radius: 50%;
       background-color: #eee;
-      height: 0.75em;
-      width: 0.75em;
       position: absolute;
       left: -12px;
-      transform: translate(-50%, 15%);
+      top: 50%;
+      transform: translate(-50%, -50%);
       cursor: pointer;
+      padding: 0.4em;
     }
     
     .line .line-note.active {
@@ -156,8 +166,13 @@ button:focus {
     }
     
     .line .dir-note.active {
-      background-color: #E5C392;
+      background-color: #8dff80;
       color: black;
+      margin-right: 3px;
+    }
+
+    .line span.word-missed {
+      background-color: orange;
     }
 
 .title {
@@ -178,4 +193,99 @@ button:focus {
 
 .direction {
   font-style: italic;
+}
+
+.modal-container {
+  z-index: 100;
+  position: fixed; /* Stay in place */
+  left: 0;
+  top: 0;
+  width: 100%; /* Full width */
+  height: 100%; /* Full height */
+  margin: auto auto;
+  overflow: auto; /* Enable scroll if needed */
+  background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+
+.modal {
+  max-width: 400px;
+  background-color: white;
+  margin: 0 auto;
+  margin-top: 20px;
+  border-radius: 2px;
+  box-shadow: 0px 1px 2px 0px;
+  padding: 5px 20px;
+  border: 1px solid #888;
+}
+
+.cue-modal {
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-header, .modal-footer {
+  display: flex;
+}
+
+.modal-header {
+  justify-content: space-between;
+  padding: 5px 0;
+}
+
+.modal-header > .close-button, .modal-header > .cue-type {
+  flex: initial;
+}
+
+.cue-modal .cue-message {
+  display: block;
+  width: 99%;
+  min-height: 100px;
+  outline: none;
+  padding: 0;
+  margin: 2px;
+}
+
+.modal-footer > button {
+  flex: 1;
+}
+
+button.warning {
+  background-color: #ffdddd;
+}
+
+button.primary {
+  background-color: #ddffdd;
+}
+
+.note {
+    padding: 5px;
+    background-color: #eee;
+    border-radius: 5px;
+    margin-bottom: 10px;
+}
+
+.note select {
+    outline: none;
+    background: inherit;
+    padding: 0;
+    margin: 0;
+}
+
+.buffer {
+  height: calc(100% - 3em);
+}
+
+.footer {
+  flex: 0 0 auto;
+  display: flex;
+}
+.footer button {
+  flex: 1;
+  margin: 1px;
+}
+
+
+.email-modal .character thead th {
+  text-align: left;
+  padding: 0 10px 0 0;
 }
