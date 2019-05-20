@@ -133,6 +133,7 @@ function Line() {
 
 const SpeakingBlock = {
   view: ({attrs: {state, actions, block, pos}}) => {
+    console.log('block', block);
     return block[0] === null
     ? m('p.direction', m(Line, {state, actions, line: block[1][0], pos: [...pos, 0]}))
     : m('p.speaking-block', {'data-pos': pos}, m('div.character', state.play.characters[block[0]].name), block[1].map((line, l) => m(Line, {state, actions, line, pos: [...pos, l]})))
@@ -304,7 +305,7 @@ const EmailModal = {
   view: ({attrs: {state : {play, play: {script, director_notes, line_notes}}, actions, onclose}}) =>
     m(Modal,
       m('div.modal.email-modal',
-        _.toPairs(generateEmail(script, director_notes)(line_notes)).map(([k,v]) => m('div.character', m('div.name', play.characters[k].name), m('table', m('thead', m('tr', m('th', 'Act'), m('th', 'Scene'), m('th', 'Text'), m('th', 'Comments'))), v))),
+        _.toPairs(generateEmail(script, director_notes)(line_notes)).map(([k,v]) => m('div.character', m('div.name', play.characters[k] ? play.characters[k].name : 'Stage Directions'), m('table', m('thead', m('tr', m('th', 'Act'), m('th', 'Scene'), m('th', 'Text'), m('th', 'Comments'))), v))),
         m('button.pure-button', {onclick: onclose}, 'Close')
       ))
 }
