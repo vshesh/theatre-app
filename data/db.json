@@ -20,7 +20,8 @@
       [
         [
           [
-            " [Enter DUKE_VINCENTIO, ESCALUS]"
+            null,
+            [" [Enter DUKE_VINCENTIO, ESCALUS]"]
           ],
           [
             "DUKE_VINCENTIO",
@@ -58,7 +59,8 @@
             ]
           ],
           [
-            " [Enter ANGELO]"
+            null,
+            [" [Enter ANGELO]"]
           ],
           [
             "DUKE_VINCENTIO",
@@ -126,7 +128,8 @@
             ]
           ],
           [
-            " [Exit DUKE_VINCENTIO]"
+            null,
+            [" [Exit DUKE_VINCENTIO]"]
           ],
           [
             "ANGELO",
@@ -144,7 +147,8 @@
             ]
           ],
           [
-            " [Exeunt.]"
+            null,
+            [" [Exeunt.]"]
           ]
         ]
       ]
