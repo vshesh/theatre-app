@@ -133,7 +133,6 @@ function Line() {
 
 const SpeakingBlock = {
   view: ({attrs: {state, actions, block, pos}}) => {
-    console.log('block', block);
     return block[0] === null
     ? m('p.direction', m(Line, {state, actions, line: block[1][0], pos: [...pos, 0]}))
     : m('p.speaking-block', {'data-pos': pos}, m('div.character', state.play.characters[block[0]].name), block[1].map((line, l) => m(Line, {state, actions, line, pos: [...pos, l]})))
