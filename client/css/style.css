@@ -289,3 +289,8 @@ button.primary {
   text-align: left;
   padding: 0 10px 0 0;
 }
+
+
+.scene-header {
+  font-size: 125%;
+}

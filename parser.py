@@ -1,66 +1,15 @@
-import re
-
-script = open("data/an_ideal_husband.txt")
-
-# character list 
-
-# characterName = '^\n\n([A-Z\s]+)(?<!MRS).'
-characterName = '([A-Z]{2,}[(?,=MRS?)?\.][\s]*[A-Z]{2,})'
-act = "ACT"
-scene = "SCENE"
-curtain = "CURTAIN"
-stageDir = "\[[\w\s]\]"
-# charactersInScene = 
-
-#generate character list
-characterNames = []
-for line in script:
-	r = re.findall(characterName, line)
-	for name in r:
-		if (name not in characterNames):
-				characterNames.append(name)
-				print line
-				print name
-print characterNames
-
-firstLine = True
-actList = []
-sceneList = []
-charDialogue = ()
-dialogue = ""
-allWords = []
+import regex as re
+import simplejson as json
 
 
-for line in script:
-	for word in line:
-			if word is act:
-				continue
-			if word is scene:
-				actList.append(sceneList)
-				continue
-			if word is characterName:
-				if firstLine == true:
-					charDialogue[1] = dialogue
-					sceneList.append(charDialogue)
-				else:
-					firstLine = false
-				charDialogue[0] = characterName
-				continue
-			else: 
-				allWords.append(word)
-				dialogue = dialogue + word
+split_scene = lambda scene: re.split(re.compile(r'(?:\n\n+)|(?:\n\[)', re.MULTILINE), scene)[1:-1]
+process_scene = lambda x: [None, [x.strip() if x.startswith('[') else '['+x.strip()]] if x.strip(
+).endswith(']') else [x.split('\n')[0].strip().upper(), [y.strip() for y in x.split('\n')[1:]]]
 
-print actList
-
-
-
-
-
-
-
-
-
-
-
-
-		
+if __name__ == '__main__':
+  s = open('data/Measure.txt').read()
+  acts = re.split(re.compile(r'^ACT \d$', re.MULTILINE), s)[1:]
+  scenes = list(map(lambda a: re.split(re.compile('^SCENE \d$', re.MULTILINE), a)[1:], acts))
+  print(json.dumps(list(map(lambda a: list(map(lambda x: list(map(process_scene, split_scene(x)
+)), a)), scenes))))
+  

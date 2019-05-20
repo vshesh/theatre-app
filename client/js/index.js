@@ -92,17 +92,17 @@ const NoteModal = {
     }
 }
 
-
-function Word() {
-  return {
-    view: ({attrs: {state, actions, word, pos}}) =>
-      m('span.word', {
-          onclick: () => actions.line_notes.toggle(pos, !state.play.line_notes[pos]),
-          class: cx({'word-missed': state.display.line_notes && state.play.line_notes[pos]})
-        }, word)
-  }
-}
-
+//
+// function Word() {
+//   return {
+//     view: ({attrs: {state, actions, word, pos}}) =>
+//       m('span.word', {
+//           onclick: () => actions.line_notes.toggle(pos, !state.play.line_notes[pos]),
+//           class: cx({'word-missed': state.display.line_notes && state.play.line_notes[pos]})
+//         }, word)
+//   }
+// }
+//
 
 function Line() {
   let lightModal = false;
@@ -133,8 +133,8 @@ function Line() {
 
 const SpeakingBlock = {
   view: ({attrs: {state, actions, block, pos}}) => {
-    return block.length === 1
-    ? m('p.direction', m(Line, {state, actions, line: block[0], pos: [...pos, 0]}))
+    return block[0] === null
+    ? m('p.direction', m(Line, {state, actions, line: block[1][0], pos: [...pos, 0]}))
     : m('p.speaking-block', {'data-pos': pos}, m('div.character', state.play.characters[block[0]].name), block[1].map((line, l) => m(Line, {state, actions, line, pos: [...pos, l]})))
   }
 }
@@ -151,8 +151,8 @@ const Script = {
     })},
       m('div.title', play.title, ' by ', play.author),
       !!play && script.map((act, a) =>
-        m('div.act', act.map((scene, sc) => scene.map((block, l) =>
-          m(SpeakingBlock, {state: state, actions: actions, block: block, pos: [a, sc, l]}) )) )),
+        m('div.act', act.map((scene, sc) => m('div.scene', m('div.scene-header', `Act ${a+1} Scene ${sc+1}`), scene.map((block, l) =>
+          m(SpeakingBlock, {state: state, actions: actions, block: block, pos: [a, sc, l]}) )) ) )),
       m('div.buffer')
     )
   }
