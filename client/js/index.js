@@ -76,9 +76,11 @@ const NoteModal = {
               'Comment for ',
               m('select', {value: note.type, onchange: (v) => actions.notes.update(pos, i, {type: v.target.value})},
                 m('option', {value: 'line'}, 'Line'),
+                m('option', {value: 'actor'}, 'Actor'),
                 m('option', {value: 'light'}, 'Lights'),
                 m('option', {value: 'sound'}, 'Sound'),
                 m('option', {value: 'props'}, 'Props'),
+                m('option', {value: 'props'}, 'Costumes'),
                 m('option', {value: 'set'}, 'Set'),
                 m('option', {value: 'all cast'}, 'All Cast')),
             m('button.warning.pure-button', {onclick: () => actions.notes.remove(pos, i)}, 'Remove'),
@@ -92,32 +94,22 @@ const NoteModal = {
     }
 }
 
-//
-// function Word() {
-//   return {
-//     view: ({attrs: {state, actions, word, pos}}) =>
-//       m('span.word', {
-//           onclick: () => actions.line_notes.toggle(pos, !state.play.line_notes[pos]),
-//           class: cx({'word-missed': state.display.line_notes && state.play.line_notes[pos]})
-//         }, word)
-//   }
-// }
-//
 
 function Line() {
   let lightModal = false;
   let noteModal = false;
   return {
     view: ({attrs: {state, actions, line, pos}}) => {
+    const handleNoteModalOpen = () => {if (!(x => !!x && x.length > 0)(state.play.director_notes[pos])) { actions.notes.add(pos) } noteModal = true;};
     return m('span.line',
       {'data-pos': pos, class: cx({active: state.display.stage && _.equals(state.active_line, pos)}) },
-      state.display.line_notes && m('span.line-note', {class: cx({active: state.play.line_notes[pos]}), onclick: () => actions.line_notes.toggle(pos, !state.play.line_notes[pos])}),
+      state.display.line_notes && m('span.line-note', {class: cx({active: state.play.line_notes[pos]}), onclick: () => {actions.line_notes.toggle(pos, !state.play.line_notes[pos]); /* after toggle the state is reversed */ state.play.line_notes[pos] && handleNoteModalOpen()} }),
       m('span.text', line /*.split(' ').map((w,i) => m(Word, {state, actions, word: w + ' ', pos: [...pos, i]}))*/ ),
       m('span.extras',
         state.display.stage && (_.map(x => pos in x, _.values(state.play.blocking)).reduce((acc,x)=> acc||x, false)) && m('span.blocking-mark', '\u00a0'),
         state.display.dir_notes && m('span.dir-note', {
           class: cx({active: (x => !!x && x.length > 0)(state.play.director_notes[pos])}),
-          onclick: () => {if (!(x => !!x && x.length > 0)(state.play.director_notes[pos])) { actions.notes.add(pos) } noteModal = true;}
+          onclick: handleNoteModalOpen,
         }, (x => !!x && x.length > 0)(state.play.director_notes[pos]) ? '!' : '+'),
         noteModal && m(NoteModal, {actions: actions, onclose: () => {noteModal = false}, pos: pos, notes: state.play.director_notes[pos]}),
         false && state.display.cues && m('span.light-cue', {
@@ -287,10 +279,12 @@ const ConfirmClearModal = {
         m('button.pure-button', {onclick: onclose}, 'Cancel & Return'),
         m('button.pure-button.warning', {onclick: () => {actions.line_notes.clear(); onclose()}}, 'Clear Line Notes'))))
 }
-
+const contains = (x, l) => _.indexOf(x, l) >= 0;
 const generateEmail = (script, comments) =>
   _.flow([
     _.pickBy(_.identity),
+    x => _.merge(x, _.pickBy(v => contains('line', _.pluck('type', v)), comments)),
+    _.tap(x => console.log('merged', x)),
     _.keys,
     _.map(decodeArray),
     _.map(x => [
@@ -298,7 +292,8 @@ const generateEmail = (script, comments) =>
       x[0]+1,
       x[1]+1,
       _.get([...(x.slice(0,3)), 1, x[3]], script),
-      _.pluck('message', _.filter(x => x.type === 'line', _.get(`${x}`, comments))).join('\n')
+      _.pluck('message', _.filter(x => x.type === 'line', _.get(`${x}`, comments))).join('\n'),
+      _.pluck('message', _.filter(x => x.type === 'actor', _.get(`${x}`, comments))).join('\n')
     ]),
     _.groupBy(_.head),
     _.mapValues(_.map(_.tail)),
@@ -311,11 +306,12 @@ const EmailModal = {
     m(Modal,
       m('div.modal.email-modal',
         'You can see your missed lines in context here: ',
-        m('a', {href: 'https://theatrem.herokuapp.com'}, 'https://theatrem.herokuapp.com'),
+        m('a', {href: 'https://theatrem.herokuapp.com'}, 'https://theatrem.herokuapp.com/#!/1'),
         _.toPairs(generateEmail(script, director_notes)(line_notes)).map(([k,v]) =>
           m('div.character',
             m('div.name', play.characters[k] ? play.characters[k].name : 'Stage Directions'),
-            m('table', m('thead', m('tr', m('th', 'Act'), m('th', 'Scene'), m('th', 'Text'), m('th', 'Comments'))), v))),
+            m('table', m('thead', m('tr', m('th', 'Act'), m('th', 'Scene'), m('th', 'Text'), m('th', 'SM Comments'), m('th', 'From Director'))), v))),
+        
         m('button.pure-button', {onclick: onclose}, 'Close')
       ))
 }

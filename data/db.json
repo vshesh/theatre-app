@@ -6572,18 +6572,28 @@
         ]
       ]
     ],
-    "blocking": {},
+    "blocking": {
+      "MISTRESS_OVERDONE": {}
+    },
     "cues": {},
     "line_notes": {
-      "0,0,0,0": true
+      "0,0,0,0": true,
+      "0,0,1,0": false
     },
     "director_notes": {
       "0,0,0,0": [
         {
           "type": "line",
-          "message": "some line note"
+          "message": ""
         }
-      ]
+      ],
+      "0,0,1,0": [
+        {
+          "type": "line",
+          "message": "hello"
+        }
+      ],
+      "0,0,2,0": []
     },
     "id": "1"
   }
