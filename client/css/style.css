@@ -155,6 +155,10 @@ button:focus {
       background-color: orange;
     }
     
+    .line .text.missed-line {
+      background-color: orange;
+    }
+    
     .line .light-cue.active {
       background-color: #ffea80;
       color: black;

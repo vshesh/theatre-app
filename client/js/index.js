@@ -64,12 +64,13 @@ const CueModal = {
 
 const NoteModal = {
   view: ({attrs: {actions, onclose, notes, pos}}) => {
+    const close = () => {if (notes.length === 1 && notes[0].message.trim().length === 0) { actions.notes.remove(pos, 0); } onclose();}
     return m(Modal,
       m('div.modal.cue-modal',
         m('div.modal-header',
           m('div.modal-header-left',
           m('span.header', 'Comments')),
-          m('button.pure-button.close-button', {onclick: onclose}, 'X')),
+          m('button.pure-button.close-button', {onclick: close}, 'X')),
         m('div.notes', notes.map((note,i) =>
           m('div.note',
             m('span.cue-type',
@@ -90,7 +91,7 @@ const NoteModal = {
           m('button.pure-button', {onclick: () => actions.notes.add(pos)}, '+Add another note'))
       ),
         m('div.modal-footer',
-          m('button.primary.pure-button', {onclick: onclose}, 'Done')  )))
+          m('button.primary.pure-button', {onclick: close}, 'Done')  )))
     }
 }
 
@@ -104,7 +105,7 @@ function Line() {
     return m('span.line',
       {'data-pos': pos, class: cx({active: state.display.stage && _.equals(state.active_line, pos)}) },
       state.display.line_notes && m('span.line-note', {class: cx({active: state.play.line_notes[pos]}), onclick: () => {actions.line_notes.toggle(pos, !state.play.line_notes[pos]); /* after toggle the state is reversed */ state.play.line_notes[pos] && handleNoteModalOpen()} }),
-      m('span.text', line /*.split(' ').map((w,i) => m(Word, {state, actions, word: w + ' ', pos: [...pos, i]}))*/ ),
+      m('span.text', {class: cx({'missed-line': state.play.line_notes[pos]})}, line /*.split(' ').map((w,i) => m(Word, {state, actions, word: w + ' ', pos: [...pos, i]}))*/ ),
       m('span.extras',
         state.display.stage && (_.map(x => pos in x, _.values(state.play.blocking)).reduce((acc,x)=> acc||x, false)) && m('span.blocking-mark', '\u00a0'),
         state.display.dir_notes && m('span.dir-note', {
@@ -283,7 +284,8 @@ const contains = (x, l) => _.indexOf(x, l) >= 0;
 const generateEmail = (script, comments) =>
   _.flow([
     _.pickBy(_.identity),
-    x => _.merge(x, _.pickBy(v => contains('line', _.pluck('type', v)), comments)),
+// this line is for making 'line' comments without a clicked left side show up.
+//    x => _.merge(x, _.pickBy(v => contains('line', _.pluck('type', v)), comments)),
     _.tap(x => console.log('merged', x)),
     _.keys,
     _.map(decodeArray),
