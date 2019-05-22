@@ -2,19 +2,29 @@ Tasks
 =========
 
 Vishesh
+* new stage image
+  * stage display should be false by default.
+* old line Notes (don't ever lose line notes)
+* cues (line basis)
+  * just need name 2 letters or 3 numbers + type (rectangles then for names)
+  * background color (purple or something)
+  * sound icon or light icon possibly to help distinguish
+  * fancy letter Q for the plus button +Q
+  * highlight line that the icon is on as well. (sound cue color dominates light cue color)
+* don't show missed lines when line notes are off
 
 * labels for the different icons in the script
 * Add logging (google analytics)
   * any change to the play information
 
 Rachel
-* Fix measure for measure script
-* Table of contents for script
-  * Scroll to position in script
+* get the graph reports done.
 
 Optional
 ============
 
+* Table of contents for script
+  * Scroll to position in script
 * onboarding flow
   * screen for multiple productions
   * add an image and a script (in a specified simple format)
