@@ -47,18 +47,20 @@ const Modal = function() {
 
 
 const CueModal = {
-  view: ({attrs: {actions, onclose, cue}}) =>
-    m(Modal,
+  view: ({attrs: {actions, onclose, cue, pos, i}}) => {
+    return m(Modal,
       m('div.modal.cue-modal',
         m('div.modal-header',
           m('div.modal-header-left',
-          m('span.cue-type', cue.type, ' ', 'cue'),
-          m('input.cue-name', {type: 'field', value:  cue.name})),
-          m('button.pure-button.close-button', {onclick: onclose}, 'X')),
-        m('textarea.cue-message', {value: cue.message}),
+            m('span.cue-type', cue.type, ' ', 'cue')),
+            m('button.pure-button.close-button', {onclick: onclose}, 'X')),
+        m('span', 'Name'),
+        m('input.cue-name', {type: 'field', value:  cue.name, oninput: (e) => actions.cues.update(pos, i, {name: e.target.value})}),
+        m('textarea.cue-message', {placeholder: 'Message... ', oninput: (e) => action.cues.update(pos, i, {message: e.target.value}), value: cue.message}),
         m('div.modal-footer',
-          m('button.warning.pure-button', 'Delete'),
-          m('button.primary.pure-button', 'Save'))))
+          m('button.warning.pure-button', {onclick: () => {actions.cues.remove(pos, i); onclose();}}, 'Delete'),
+          m('button.primary.pure-button', {onclick: onclose}, 'Save'))))
+  }
 }
 
 
@@ -98,14 +100,28 @@ const NoteModal = {
 
 function Line() {
   let lightModal = false;
+  let soundModal = false;
   let noteModal = false;
   return {
     view: ({attrs: {state, actions, line, pos}}) => {
     const handleNoteModalOpen = () => {if (!(x => !!x && x.length > 0)(state.play.director_notes[pos])) { actions.notes.add(pos) } noteModal = true;};
+    const [li, lightcue] = state.play.cues[pos] && state.play.cues[pos].constructor === Array
+    ? (i => i !== -1 ? [i, state.play.cues[pos][i]] : [undefined, undefined])(_.findIndex(x => x.type === 'light', state.play.cues[pos]))
+    : [undefined, undefined];
+    const [si, soundcue] = state.play.cues[pos] && state.play.cues[pos].constructor === Array
+    ? (i => i !== -1 ? [i, state.play.cues[pos][i]] : [undefined, undefined])(_.findIndex(x => x.type === 'sound', state.play.cues[pos]))
+    : [undefined, undefined];
+    !_.isUndefined(soundcue) && console.log(pos, soundcue, si)
     return m('span.line',
       {'data-pos': pos, class: cx({active: state.display.stage && _.equals(state.active_line, pos)}) },
       state.display.line_notes && m('span.line-note', {class: cx({active: state.play.line_notes[pos]}), onclick: () => {actions.line_notes.toggle(pos, !state.play.line_notes[pos]); /* after toggle the state is reversed */ state.play.line_notes[pos] && handleNoteModalOpen()} }),
-      m('span.text', {class: cx({'missed-line': state.play.line_notes[pos]})}, line /*.split(' ').map((w,i) => m(Word, {state, actions, word: w + ' ', pos: [...pos, i]}))*/ ),
+      m('span.text', {class: cx({
+          'missed-line': state.display.line_notes && state.play.line_notes[pos],
+          'light-cue-line': state.display.cues && !!lightcue,
+          'sound-cue-line': state.display.cues && !!soundcue
+        })},
+        line
+      ),
       m('span.extras',
         state.display.stage && (_.map(x => pos in x, _.values(state.play.blocking)).reduce((acc,x)=> acc||x, false)) && m('span.blocking-mark', '\u00a0'),
         state.display.dir_notes && m('span.dir-note', {
@@ -113,12 +129,16 @@ function Line() {
           onclick: handleNoteModalOpen,
         }, (x => !!x && x.length > 0)(state.play.director_notes[pos]) ? '!' : '+'),
         noteModal && m(NoteModal, {actions: actions, onclose: () => {noteModal = false}, pos: pos, notes: state.play.director_notes[pos]}),
-        false && state.display.cues && m('span.light-cue', {
-          class: cx({active: !!state.play.cues[pos] && state.play.cues[pos].length > 0}),
-          onclick: () => {lightModal = !lightModal}
-        }, state.play.cues[pos] ? state.play.cues[pos][0].name : null,
-        lightModal && m(CueModal, {actions: actions, onclose: () => {lightModal = false}, cue: state.play.cues[pos][0]})),
-        false && state.display.cues && m('span.sound-cue', ' '))
+        state.display.cues && m('span.light-cue', {
+          class: cx({active: !!lightcue}),
+          onclick: () => {if (_.isUndefined(lightcue)) {actions.cues.add(pos, 'light')} lightModal = !lightModal;}
+        }, lightcue ? lightcue.name : '💡',
+        lightModal && m(CueModal, {cue: lightcue, pos: pos, i:li, actions: actions, onclose: () => {lightcue.name.trim() === "" && actions.cues.remove(pos, li); lightModal = false}})),
+        state.display.cues && m('span.sound-cue', {
+          class: cx({active: !!soundcue}),
+          onclick: () => {if (_.isUndefined(soundcue)) {actions.cues.add(pos, 'sound')}  soundModal = !soundModal}
+        }, soundcue ? soundcue.name : "🔉",
+        soundModal && m(CueModal, {cue: soundcue, pos: pos, i:si, actions: actions, onclose: () => {soundcue.name.trim() === "" && actions.cues.remove(pos, si); soundModal = false}})))
     )}
   };
 }
@@ -267,7 +287,7 @@ const ModeSelector = {
   view: ({attrs: {display, actions}}) =>
     m('div.mode-selector',
       m(DisplayToggle, {name: 'Stage', state: display.stage, ontoggle: actions.display.toggle_stage}),
-      false && m(DisplayToggle, {name: 'Cues', state: display.cues, ontoggle: actions.display.toggle_cues}),
+      m(DisplayToggle, {name: 'Cues', state: display.cues, ontoggle: actions.display.toggle_cues}),
       m(DisplayToggle, {name: 'Line Notes', state: display.line_notes, ontoggle: actions.display.toggle_line_notes}),
       m(DisplayToggle, {name: 'Comments', state: display.dir_notes, ontoggle: actions.display.toggle_dir_notes}))
 }
@@ -278,7 +298,7 @@ const ConfirmClearModal = {
       'Are you sure that you want to clear all the line notes?',
       m('div.button-bar',
         m('button.pure-button', {onclick: onclose}, 'Cancel & Return'),
-        m('button.pure-button.warning', {onclick: () => {actions.line_notes.clear(); onclose()}}, 'Clear Line Notes'))))
+        m('button.pure-button.warning', {onclick: () => {actions.line_notes.store(state.play.line_notes); actions.line_notes.clear(); onclose()}}, 'Clear Line Notes'))))
 }
 const contains = (x, l) => _.indexOf(x, l) >= 0;
 const generateEmail = (script, comments) =>
@@ -348,7 +368,7 @@ const e = (category, action, label, value) => ga('send', 'event', category, acti
 const app = {
   initial_state: {
     display: {
-      stage: true,
+      stage: false,
       cues: true,
       dir_notes: true,
       line_notes: true
@@ -366,15 +386,24 @@ const app = {
   actions: (update) => ({
     receive_data: (play) => update({play: play}),
     line_notes: {
+      store: (line_notes) => update({play: PS({old_line_notes: {[Date.now()]: line_notes}})}),
       clear: () => {e('line-notes', 'clear'); return update({play: PS({line_notes: {}})})},
       toggle: (pos, v) =>{e('line-notes', 'toggle', pos.toString(), v ? 1 : 0); return update({play: PS({line_notes: PS({[pos]: v})})})}
+    },
+    cues: {
+      add: (pos, type) => {e(`cues`, `add - ${type}`, pos.toString()); return update({play: PS({cues: PS({[pos]: S(a => [].concat(a ? a : [], [{type: type, name: '', message: ''}]))})})})},
+      remove: (pos, i) => {e('cues', 'remove', `${pos}`, i); return update({play: PS({cues: PS({[pos]: S(a => [].concat(_.slice(0,i,a), a.slice(i+1)))})})})},
+      update: (pos, i, d) => {
+        e('cues', 'update', `${Object.keys(d)[0]} @ ${pos}`, i);
+        return update({play: PS({cues: PS({[pos]:  S(a => [].concat(_.slice(0,i,a), P(a[i], d), a.slice(i+1)) ) }) })})
+      }
     },
     notes: {
       add: (pos) => {e('comments', 'add', pos.toString()); return update({play: PS({director_notes: PS({[pos]: S(a => [].concat(a ? a : [], [{type: 'line', message: ''}]))})})})},
       remove: (pos, i) => {e('comments', 'remove', `${pos}`, i); return update({play: PS({director_notes: PS({[pos]: S(a => [].concat(_.slice(0,i,a), a.slice(i+1)))})})})},
       update: (pos, i, d) => {
         e('comments', 'update', `${Object.keys(d)[0]} @ ${pos}`, i);
-        return update({play: PS({director_notes: PS({[pos]:  S(a => {console.log(_.slice(0,i,a), a.slice(i+1)); return [].concat(_.slice(0,i,a), P(a[i], d), a.slice(i+1))} ) }) })}) }
+        return update({play: PS({director_notes: PS({[pos]:  S(a => [].concat(_.slice(0,i,a), P(a[i], d), a.slice(i+1)) ) }) })}) }
     },
     display: {
       toggle_stage: () => {e('display', 'toggle', 'stage', !states().display.stage); return update({display: PS({stage: S(v => !v)})})},

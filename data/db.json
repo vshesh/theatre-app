@@ -6574,11 +6574,13 @@
     ],
     "blocking": {
     },
-    "cues": {},
-    "line_notes": {
+    "cues": {
     },
+    "line_notes": {},
     "director_notes": {
     },
-    "id": "1"
+    "id": "1",
+    "old_line_notes": {
+    }
   }
 }

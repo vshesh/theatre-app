@@ -2,6 +2,7 @@ html, body {
   margin: 0;
   padding: 0;
   font-size: 14px;
+  line-height: 1.2em;
 }
 
 html,body,#container {
@@ -122,19 +123,17 @@ button:focus {
     text-align: right;}
 
     .line .extras > * {
-      font-style: normal;;
-      display: inline-block;}
-  
-    .line .extras > * {
-      padding: 0 0.5em;
-      margin: 0 1px;
-      border-radius: 50%;
+      font-style: normal;
+      display: inline-block;
+      width: 40px;
+      height: 1.2em;
       text-align: center;
       cursor: pointer;
       vertical-align: text-top;
     }
     
     .line .extras .blocking-mark {
+      border-radius: 50%;
       background-color: red;
       opacity: 0.5;
     }
@@ -154,22 +153,47 @@ button:focus {
     .line .line-note.active {
       background-color: orange;
     }
+        
+    .line .text.light-cue-line {
+      background-color: #ffea80;
+    }
+
+    .line .text.sound-cue-line {
+      background-color: #CC92C2;
+    }
     
     .line .text.missed-line {
       background-color: orange;
     }
     
+    .line .light-cue:not(.active) {
+      visibility: hidden;
+    }
+    
+    .line.active .light-cue:not(.active), .line:hover .light-cue:not(.active) {
+      visibility: visible;
+    }
+
     .line .light-cue.active {
       background-color: #ffea80;
       color: black;
     }
     
+    .line .sound-cue:not(.active) {
+      visibility: hidden;
+    }
+    
+    .line.active .sound-cue:not(.active), .line:hover .sound-cue:not(.active) {
+      visibility: visible;
+    }
+
     .line .sound-cue.active {
       background-color: #CC92C2;
       color: black;
     }
     
     .line .dir-note.active {
+      border-radius: 50%;
       background-color: #8dff80;
       color: black;
       margin-right: 3px;
@@ -181,6 +205,7 @@ button:focus {
 
 .title {
   font-size: 150%;
+  line-height: 2em;
 }
 
 .active {
@@ -243,10 +268,15 @@ button:focus {
 .cue-modal .cue-message {
   display: block;
   width: 99%;
-  min-height: 100px;
+  min-height: 30px;
   outline: none;
-  padding: 0;
   margin: 2px;
+  border: 1px solid #ddd;
+  box-shadow: none;
+  border-radius: 5px;
+  padding: 5px;
+  position: relative;
+  right: 5px;
 }
 
 .modal-footer > button {
