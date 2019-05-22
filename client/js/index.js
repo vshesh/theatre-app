@@ -4,7 +4,6 @@ const decodeArray = (s) => s.split(',').map(x => parseInt(x));
 const cx = (classmap) => _.keys(_.pickBy((value, key) => _.isBoolean(value) && value, classmap)).join(' ');
 const maxCompare = (compare) => (l) => _.reduce((acc, next) => compare(acc, next) < 0 ? next : acc, _.head(l), _.tail(l));
 
-
 const Modal = function() {
   let dom
   let children
@@ -362,7 +361,11 @@ const App = {
 }
 
 
-const e = (category, action, label, value) => ga('send', 'event', category, action, label, value)
+const e = (category, action, label, value) => {
+  // from the online hack where we populate events independently
+  ga('set', 'dimension2', new Date().getTime());
+  ga('send', 'event', category, action, label, value)
+}
 
 
 const app = {
