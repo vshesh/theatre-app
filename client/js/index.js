@@ -110,7 +110,6 @@ function Line() {
     const [si, soundcue] = state.play.cues[pos] && state.play.cues[pos].constructor === Array
     ? (i => i !== -1 ? [i, state.play.cues[pos][i]] : [undefined, undefined])(_.findIndex(x => x.type === 'sound', state.play.cues[pos]))
     : [undefined, undefined];
-    !_.isUndefined(soundcue) && console.log(pos, soundcue, si)
     return m('span.line',
       {'data-pos': pos, class: cx({active: state.display.stage && _.equals(state.active_line, pos)}) },
       state.display.line_notes && m('span.line-note', {class: cx({active: state.play.line_notes[pos]}), onclick: () => {actions.line_notes.toggle(pos, !state.play.line_notes[pos]); /* after toggle the state is reversed */ state.play.line_notes[pos] && handleNoteModalOpen()} }),

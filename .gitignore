@@ -17,3 +17,5 @@ dist/*
 */__target__/*
 */node_modules/*
 client/js/node_modules/*
+.ga-token.rds
+client_secrets.json

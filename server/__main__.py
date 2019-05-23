@@ -50,6 +50,10 @@ def create_production(data):
   db[hash(data['name'])] = t.merge(skeleton, data, {'id': hash(data['name'])})
   return {'success': True}
 
+@app.get('/db')
+def get_db():
+  return db
+
 @app.get('/script')
 def get_script():
   return db["1"]
